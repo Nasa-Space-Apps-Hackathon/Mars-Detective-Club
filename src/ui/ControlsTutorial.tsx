@@ -13,6 +13,8 @@ const ROWS: [React.ReactNode, string][] = [
     "Walk and turn",
   ],
   [<kbd key="s">Shift</kbd>, "Run faster"],
+  [<kbd key="sp">Space</kbd>, "Jump (Mars gravity is only 38% of Earth's!)"],
+  ["🖱️ Drag / scroll", "Look around / zoom the camera"],
   [<kbd key="e">E</kbd>, "Scan a NASA machine when you're close"],
   [<kbd key="j">J</kbd>, "Open your Detective Journal"],
   [<kbd key="esc">Esc</kbd>, "Pause"],

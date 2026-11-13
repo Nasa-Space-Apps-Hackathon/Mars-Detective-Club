@@ -25,43 +25,65 @@ npm run build        # static export → /out (deploys to Vercel as-is)
 
 ```
 src/
-  app/                 Next.js entry (page loads <Game/> client-side)
-  components/Game.tsx  Root: 3D world + UI overlay                    · Person 5
+  app/                   Next.js entry (page loads <Game/> client-side)
+  components/Game.tsx    Root: <MarsWorld> + <StubArtifacts> + <UILayer>   · Person 5
   store/
-    types.ts           SHARED CONTRACTS (ArtifactId, Phase, content types)
-    useGame.ts         The one game store (phases, progression)        · Person 5 + 4
-  world/
-    zones.ts           Machine positions + scan radius                 · Person 1
-    StubWorld.tsx      ⚠️ PLACEHOLDER 3D scene → replace              · Person 1 + 2
-  ui/                  Everything 2D (HUD, dialogue, files, cards…)    · Person 4 ✅
-    activities/        SoilLab (Viking), RockScanner (Opportunity), DigSite (Phoenix)
-  content/             All text + facts as JSON                        · Person 3
-    artifacts.json     Machine facts + NASA sources + Evidence Cards
-    dialogue.json      All Ziggy/Pebble lines
-    activities.json    Activity data (rocks, experiments, answers)
-  lib/                 content loaders, objectives, synthesized sfx
+    types.ts             SHARED CONTRACTS (ArtifactId, Phase, content types)
+    useGame.ts           The one game store (phases, progression)          · Person 5 + 4
+  world/                 THE MARS WORLD                                     · Person 1 ✅
+    MarsWorld.tsx        Canvas, lights, fog: puts everything together
+    zones.ts             Map layout: machine positions, spawn, map size
+    terrainData.ts       getHeight(x,z), craters, polar frost, ground colors
+    Terrain.tsx          Low-poly terrain mesh
+    Rocks.tsx            260 instanced rocks (big ones block the player)
+    Sky.tsx              Butterscotch Mars sky, sun, Phobos & Deimos
+    Dust.tsx             Floating dust + a wandering dust devil
+    Landmarks.tsx        Landing pod with club flag, signpost
+    Player.tsx           Captain Pebble: walk/run/jump (Mars gravity), camera
+    Footprints.tsx       Boot prints in the dust
+    controls.ts          Keyboard + mouse input
+    playerState.ts       Live player position, colliders, dev teleport
+  artifacts/
+    StubArtifacts.tsx    ⚠️ PLACEHOLDER machines + scan + Ziggy → replace     · Person 2
+  ui/                    Everything 2D (HUD, dialogue, files, cards…)      · Person 4 ✅
+    activities/          SoilLab (Viking), RockScanner (Opportunity), DigSite (Phoenix)
+  content/               All text + facts as JSON                          · Person 3
 ```
 
 ---
 
-## 🤝 Integration guide (read this before replacing StubWorld)
+## 🎮 Controls
 
-The UI only talks to the 3D world through the store in `src/store/useGame.ts`:
+`W/A/S/D` or arrows: walk and turn · `Shift`: run · `Space`: jump (Mars gravity, 38% of Earth's) · mouse drag: turn / tilt camera · scroll: zoom · `E`: scan · `J`: journal · `Esc`: pause
 
-| Who | Must do | API |
-|---|---|---|
-| **Person 1** (world) | Only move the player when allowed | `canMove()` → boolean |
-| **Person 1** | Report player position + heading ~10×/sec (HUD compass) | `useGame.getState().setPlayer([x, z], yaw)`, where forward = `(sin yaw, cos yaw)` |
-| **Person 1** | Put the real machine positions in `ZONES` | `src/world/zones.ts` |
-| **Person 2** (artifacts) | Tell the UI which machine is in range (or `null`) | `setNearArtifact(id \| null)` |
-| **Person 2** | When the player presses **E** near a machine | `startScan(id)` |
-| **Person 3** (content) | Edit only the JSON files, keep the keys | `src/content/*.json` |
+---
 
+## 🤝 Integration guide
+
+### The map (Person 1) ✅
+- Spawn at the landing pod (south) → **Viking 1** (west plains, ~95 m) → **Opportunity** (inside a small "Eagle" crater, east, ~130 m) → **Phoenix** (icy polar north, ~110 m).
+- `getHeight(x, z)` from `world/terrainData.ts` returns the ground height anywhere. **Always use it** to place things on the ground.
+- Change machine positions only in `world/zones.ts` (the terrain flattens a pad under each one automatically).
+
+### Machines, scan and Ziggy (Person 2): replace `artifacts/StubArtifacts.tsx`
+Keep these four things when you swap in real models:
+
+| Must do | How |
+|---|---|
+| Place each machine at `ZONES[id]`, on the ground | `const y = getHeight(x, z)` |
+| Tell the UI which machine is in range (every frame) | `useGame.getState().setNearArtifact(id \| null)` |
+| Start the scan on **E** | `if (nearArtifact && canMove()) startScan(id)` |
+| Block the player from walking through machines | `addColliders([{ x, z, r }])` in a `useEffect` (it returns a cleanup) |
+
+Read the player's live position inside `useFrame` from `playerState` (`x, y, z, yaw, speed, grounded`), e.g. to make Ziggy follow.
+
+### UI (Person 4) ✅
 Everything after `startScan(id)` is handled by the UI: dialogue → case file → activity → Evidence Card → back to `explore`. After 3/3 cards → case board ending → credits.
 
-**Phases:** `menu → intro → explore ⇄ (dialogue → memory → activity → evidence) → ending → credits`
+**Phases:** `menu → intro → explore ⇄ (dialogue → memory → activity → evidence) → ending → credits`. The player can only move while `canMove()` is true.
 
-The easiest way to integrate: copy what `StubWorld.tsx` does with the store (keyboard **E** handler, proximity loop, `setPlayer`) into your real components, then delete `StubWorld.tsx` and render your world in `components/Game.tsx`.
+### Dev tools
+Open `?dev=1`: jump to any phase, fake a scan, open an activity, unlock evidence, or **tp** (teleport next to a machine).
 
 ---
 

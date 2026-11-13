@@ -1,18 +1,22 @@
 "use client";
 
-import StubWorld from "@/world/StubWorld";
+import MarsWorld from "@/world/MarsWorld";
+import StubArtifacts from "@/artifacts/StubArtifacts";
 import UILayer from "@/ui/UILayer";
 
 /**
  * Root of the game.
- * <StubWorld/> is the placeholder 3D scene. Person 1 + 2 swap it for the real world.
- * <UILayer/> is Person 4's overlay (everything 2D).
+ * <MarsWorld/>     Person 1: terrain, sky, player, camera
+ * <StubArtifacts/> Person 2: machines, scan, Ziggy (placeholder until real models)
+ * <UILayer/>       Person 4: everything 2D
  */
 export default function Game() {
   return (
     <main className="fixed inset-0 select-none">
       <div className="absolute inset-0">
-        <StubWorld />
+        <MarsWorld>
+          <StubArtifacts />
+        </MarsWorld>
       </div>
       <UILayer />
     </main>

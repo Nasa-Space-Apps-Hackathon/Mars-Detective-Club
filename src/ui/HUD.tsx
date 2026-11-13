@@ -118,7 +118,7 @@ export default function HUD() {
           <kbd>W</kbd>
           <kbd>A</kbd>
           <kbd>S</kbd>
-          <kbd>D</kbd> move · <kbd>Shift</kbd> run · <kbd>E</kbd> scan · <kbd>Esc</kbd> pause
+          <kbd>D</kbd> move · <kbd>Shift</kbd> run · <kbd>Space</kbd> jump · <kbd>E</kbd> scan · <kbd>Esc</kbd> pause
         </div>
       )}
     </div>

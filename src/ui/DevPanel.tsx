@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useGame } from "@/store/useGame";
 import { ARTIFACT_ORDER, type ArtifactId, type Phase } from "@/store/types";
+import { teleport } from "@/world/playerState";
+import { SCAN_RADIUS, ZONES } from "@/world/zones";
 
 /** Dev-only test panel. Open the game with ?dev=1 */
 export default function DevPanel() {
@@ -50,6 +52,16 @@ export default function DevPanel() {
               </button>
               <button className="bg-white/15 px-1 rounded" onClick={() => s.devUnlock(id)}>
                 +ev
+              </button>
+              <button
+                className="bg-white/15 px-1 rounded"
+                title="teleport next to this machine"
+                onClick={() => {
+                  const [x, z] = ZONES[id];
+                  teleport.to = [x, z + SCAN_RADIUS - 1.5];
+                }}
+              >
+                tp
               </button>
             </div>
           ))}
