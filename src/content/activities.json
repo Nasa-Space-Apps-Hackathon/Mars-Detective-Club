@@ -1,0 +1,61 @@
+{
+  "_note": "DRAFT by Person 4. Person 3 reviews science + wording.",
+  "soilLab": {
+    "title": "Viking's Soil Lab",
+    "intro": "Viking had tiny labs inside. Run all 3 experiments on the Mars soil, then decide what they prove.",
+    "experiments": [
+      {
+        "id": "nutrients",
+        "label": "Feed it nutrients",
+        "icon": "💧",
+        "action": "Adding a nutrient \"soup\" to the soil…",
+        "result": "Gas bubbled out! Living things could do that… but so could special chemicals."
+      },
+      {
+        "id": "heat",
+        "label": "Heat it up",
+        "icon": "🔥",
+        "action": "Baking the soil in a tiny oven…",
+        "result": "When the soil was heated first, the reaction mostly stopped. Confusing!"
+      },
+      {
+        "id": "sniff",
+        "label": "Search for carbon molecules",
+        "icon": "🧪",
+        "action": "Sniffing the soil with a super-nose instrument…",
+        "result": "No organic molecules found. Living things are made of them, so this is a big clue."
+      }
+    ],
+    "question": "So… did Viking prove there is life on Mars?",
+    "options": [
+      { "id": "yes", "text": "Yes! The gas bubbles mean aliens!", "correct": false, "feedback": "Not so fast, detective! Chemicals can make bubbles too." },
+      { "id": "no", "text": "No. The soil reacted, but it might just be chemistry.", "correct": true, "feedback": "Exactly! Something happened, but there was no proof of life." },
+      { "id": "nothing", "text": "Nothing happened at all.", "correct": false, "feedback": "Hmm, something DID happen. Look at the results again." }
+    ]
+  },
+  "rockScanner": {
+    "title": "Opportunity's Rock Scanner",
+    "intro": "Scan each rock. Find the 2 rocks that hold clues about ancient water.",
+    "required": 2,
+    "rocks": [
+      { "id": "blueberries", "name": "Blueberry Rock", "look": "Covered in tiny round grey balls", "scan": "Hematite spheres! These \"blueberries\" usually grow inside wet rock.", "water": true, "color": "#7a6a8e" },
+      { "id": "layers", "name": "Layered Rock", "look": "Thin stripes like a cake", "scan": "Fine layers laid down by gently moving water long ago.", "water": true, "color": "#c98a5a" },
+      { "id": "basalt", "name": "Dark Rock", "look": "Dark, bumpy, full of holes", "scan": "Volcanic basalt. Cooled from lava, not formed by water.", "water": false, "color": "#4a4448" },
+      { "id": "dust", "name": "Dusty Rock", "look": "Red and covered in dust", "scan": "Just a normal rock wearing a coat of Mars dust. No water clue.", "water": false, "color": "#b5532c" }
+    ],
+    "wrongHint": "Ziggy: Hmm, that rock formed without water. Try another one!",
+    "success": "Two water clues found! Mars was once wet."
+  },
+  "digSite": {
+    "title": "Phoenix's Dig Site",
+    "intro": "Use the robotic arm: click the soil squares to dig a trench. Find the hidden white patches.",
+    "cols": 6,
+    "rows": 4,
+    "iceCells": [8, 9, 14, 15],
+    "foundText": "White patches! Is it salt? Is it ice?",
+    "waitButton": "Wait 4 Mars days (sols)",
+    "waitAction": "Phoenix waits and takes a picture every day…",
+    "revealText": "The white chunks VANISHED! Salt would stay. Ice turns straight into vapor in thin Mars air. It was WATER ICE!",
+    "minDug": 4
+  }
+}

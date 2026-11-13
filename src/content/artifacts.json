@@ -1,0 +1,78 @@
+{
+  "_note": "DRAFT by Person 4. Person 3 must verify every fact against the NASA sources listed and replace/extend. Keep the same keys.",
+  "viking1": {
+    "id": "viking1",
+    "name": "Viking 1 Lander",
+    "shortName": "Viking 1",
+    "missionTitle": "The First Clue",
+    "mission": "Viking Program (NASA)",
+    "launched": "20 Aug 1975",
+    "landed": "20 Jul 1976",
+    "year": 1976,
+    "realLocation": "Chryse Planitia (\"Plains of Gold\"), northern Mars",
+    "purpose": "Take the first pictures from the surface of Mars and test the soil and air for signs of life.",
+    "howItWorked": "A robotic arm scooped soil into tiny onboard labs. They heated it, fed it nutrients, and sniffed the gases that came out.",
+    "discovery": "Mars soil reacted in surprising ways, but no living things or organic molecules were confirmed. Scientists still debate the results today.",
+    "whyStopped": "It worked for more than 6 years. In November 1982 a wrong command sent from Earth cut off communication for good.",
+    "funFact": "Viking 1 sent back the very first photo ever taken on the surface of Mars, a picture of its own foot!",
+    "color": "#E8A86B",
+    "sources": [
+      { "label": "NASA Science: Viking 1", "url": "https://science.nasa.gov/mission/viking-1/" },
+      { "label": "NSSDCA: Viking 1 Lander", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C" }
+    ],
+    "evidenceCard": {
+      "title": "Active Soil",
+      "clue": "Mars soil is chemically active, but Viking could NOT prove there is life."
+    }
+  },
+  "opportunity": {
+    "id": "opportunity",
+    "name": "Opportunity Rover",
+    "shortName": "Opportunity",
+    "missionTitle": "The Rock That Talks",
+    "mission": "Mars Exploration Rover B (MER-B)",
+    "launched": "7 Jul 2003",
+    "landed": "25 Jan 2004",
+    "year": 2004,
+    "realLocation": "Meridiani Planum, near the Martian equator",
+    "purpose": "Act like a robot geologist: drive around and find rocks that remember if water was ever there.",
+    "howItWorked": "Solar panels powered six wheels, cameras, and a robotic arm with a rock grinder and microscope.",
+    "discovery": "It found tiny round \"blueberries\" made of hematite and layered rocks. Both usually form in water. Mars was once wet!",
+    "whyStopped": "A giant dust storm covered the whole planet in 2018 and blocked the sunlight its solar panels needed.",
+    "funFact": "It was planned to work for 90 Mars days but kept going for almost 15 years and drove farther than a marathon!",
+    "color": "#5CE1E6",
+    "sources": [
+      { "label": "NASA Science: Opportunity", "url": "https://science.nasa.gov/mission/mer-opportunity/" },
+      { "label": "NSSDCA: MER-B", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-032A" }
+    ],
+    "evidenceCard": {
+      "title": "Water Rocks",
+      "clue": "Some Mars rocks formed in water a very long time ago."
+    }
+  },
+  "phoenix": {
+    "id": "phoenix",
+    "name": "Phoenix Mars Lander",
+    "shortName": "Phoenix",
+    "missionTitle": "The Frozen Surprise",
+    "mission": "Phoenix Mars Mission (Mars Scout)",
+    "launched": "4 Aug 2007",
+    "landed": "25 May 2008",
+    "year": 2008,
+    "realLocation": "Vastitas Borealis, the icy plains near the north pole",
+    "purpose": "Dig into the frozen ground near the north pole and study ice and soil.",
+    "howItWorked": "A robotic arm dug small trenches. Ovens on the lander heated soil samples to see what was inside.",
+    "discovery": "Bright white chunks in a trench disappeared after a few days. They were water ice turning straight into vapor. Phoenix also confirmed water in a heated soil sample.",
+    "whyStopped": "Polar winter arrived. Without enough sunlight its solar panels stopped working, and contact was lost in November 2008.",
+    "funFact": "The scientists nicknamed the trench where the ice vanished \"Dodo-Goldilocks\".",
+    "color": "#B8E6FF",
+    "sources": [
+      { "label": "NASA Science: Phoenix", "url": "https://science.nasa.gov/mission/phoenix/" },
+      { "label": "NSSDCA: Phoenix", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-034A" }
+    ],
+    "evidenceCard": {
+      "title": "Hidden Ice",
+      "clue": "There is frozen water ice on Mars today, just under the soil."
+    }
+  }
+}
