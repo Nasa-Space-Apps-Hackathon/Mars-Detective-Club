@@ -4,6 +4,8 @@
 
 Case #001: *Did Mars ever have water?* Kids (9–14) play Captain Pebble with the robot sidekick Ziggy. They visit three real NASA machines on Mars (**Viking 1**, **Opportunity**, **Phoenix**), solve a mini science activity at each, collect 3 Evidence Cards, and solve the case on a timeline board.
 
+**Handoff and current progress:** [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md). Project instructions for future coding sessions are in [AGENTS.md](AGENTS.md).
+
 **Live demo:** _TODO (Vercel URL)_ · **Stack:** Next.js 15 · TypeScript · React Three Fiber · Zustand · Tailwind v4 · motion
 
 ---
@@ -35,16 +37,19 @@ src/
     zones.ts             Map layout: machine positions, spawn, map size
     terrainData.ts       getHeight(x,z), craters, polar frost, ground colors
     Terrain.tsx          Low-poly terrain mesh
-    Rocks.tsx            260 instanced rocks (big ones block the player)
+    Rocks.tsx            1,100 instanced rocks with shared Rapier colliders
     Sky.tsx              Butterscotch Mars sky, sun, Phobos & Deimos
-    Dust.tsx             Floating dust + a wandering dust devil
+    Dust.tsx             Floating dust (legacy dust devil is not mounted)
     Landmarks.tsx        Landing pod with club flag, signpost
-    Player.tsx           Captain Pebble: walk/run/jump (Mars gravity), camera
+    Player.tsx           Rapier character controller: walk/run/jump and wind forces
+    Character.tsx        Articulated Pebble, scan gesture and following Ziggy
+    CameraRig.tsx        Drei OrbitControls, follow, zoom and steady camera option
+    Environment.tsx      Cloud layers and three interactive dust devils
     Footprints.tsx       Boot prints in the dust
-    controls.ts          Keyboard + mouse input
+    controls.ts          Legacy input helpers; current player/camera handle input
     playerState.ts       Live player position, colliders, dev teleport
   artifacts/
-    StubArtifacts.tsx    ⚠️ PLACEHOLDER machines + scan + Ziggy → replace     · Person 2
+    StubArtifacts.tsx    NASA Viking/Opportunity models + placeholder Phoenix · Person 2
   ui/                    Everything 2D (HUD, dialogue, files, cards…)      · Person 4 ✅
     activities/          SoilLab (Viking), RockScanner (Opportunity), DigSite (Phoenix)
   content/               All text + facts as JSON                          · Person 3
@@ -54,7 +59,11 @@ src/
 
 ## 🎮 Controls
 
-`W/A/S/D` or arrows: walk and turn · `Shift`: run · `Space`: jump (Mars gravity, 38% of Earth's) · mouse drag: turn / tilt camera · scroll: zoom · `E`: scan · `J`: journal · `Esc`: pause
+`W/A/S/D` or arrows: move relative to the camera · `Shift`: sprint · `Space`: jump (original Mars gravity) · mouse drag: orbit 360° / tilt camera · scroll: zoom · `R`: recenter · `E`: scan · `J`: journal · `Esc`: pause
+
+Exploration preserves the original Mars gravity (3.71 m/s²) and jump impulse (3.4 m/s). Dust-devil forces are exaggerated for this playful simulation: they pull, lift and toss Pebble, with an automatic recovery; landing zones and mission pads are sheltered. The camera button in the HUD reduces shake and speed effects and also respects the system's reduced-motion preference.
+
+Viking 1 and Opportunity now load local NASA GLB models using Drei. Model sources, credits and the remaining Phoenix asset gap are documented in [public/models/README.md](public/models/README.md). Draco decoding files are hosted locally. Phoenix is still a stylized representation.
 
 ---
 
@@ -65,15 +74,15 @@ src/
 - `getHeight(x, z)` from `world/terrainData.ts` returns the ground height anywhere. **Always use it** to place things on the ground.
 - Change machine positions only in `world/zones.ts` (the terrain flattens a pad under each one automatically).
 
-### Machines, scan and Ziggy (Person 2): replace `artifacts/StubArtifacts.tsx`
-Keep these four things when you swap in real models:
+### Machines, scan and Ziggy (Person 2)
+`artifacts/StubArtifacts.tsx` renders the machines, including local NASA models. The upgraded `world/Player.tsx` owns grounded proximity and scan input; `world/Character.tsx` owns Pebble's scan gesture and Ziggy.
 
 | Must do | How |
 |---|---|
 | Place each machine at `ZONES[id]`, on the ground | `const y = getHeight(x, z)` |
-| Tell the UI which machine is in range (every frame) | `useGame.getState().setNearArtifact(id \| null)` |
-| Start the scan on **E** | `if (nearArtifact && canMove()) startScan(id)` |
-| Block the player from walking through machines | `addColliders([{ x, z, r }])` in a `useEffect` (it returns a cleanup) |
+| Tell the UI which machine is in range | Already handled by `world/Player.tsx` while grounded |
+| Start the scan on **E** | Already handled by `world/Player.tsx`; HUD buttons use the same store action |
+| Block the player from walking through machines | Fixed Rapier shapes live in `world/WorldColliders.tsx`; update them when changing model dimensions |
 
 Read the player's live position inside `useFrame` from `playerState` (`x, y, z, yaw, speed, grounded`), e.g. to make Ziggy follow.
 

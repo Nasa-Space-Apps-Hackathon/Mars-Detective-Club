@@ -6,24 +6,24 @@
  * Person 2's machines/Ziggy are passed in as children.
  */
 
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, type ReactNode } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Suspense, useRef, type ReactNode } from "react";
+import { Physics } from "@react-three/rapier";
 import * as THREE from "three";
-import { attachInput } from "./controls";
 import { playerState } from "./playerState";
 import Terrain from "./Terrain";
 import Rocks from "./Rocks";
 import Sky, { SKY_HORIZON, SUN_DIR } from "./Sky";
-import { DustDevil, DustParticles } from "./Dust";
+import { DustParticles } from "./Dust";
 import Landmarks from "./Landmarks";
 import Footprints from "./Footprints";
 import Player from "./Player";
-
-function Input() {
-  const gl = useThree((s) => s.gl);
-  useEffect(() => attachInput(gl.domElement), [gl]);
-  return null;
-}
+import CameraRig from "./CameraRig";
+import Environment from "./Environment";
+import WorldColliders from "./WorldColliders";
+import { createWorldRuntime } from "./runtime";
+import DebugWorld from "./DebugWorld";
+import { MARS_GRAVITY } from "./physics";
 
 /** Sun light whose shadow box follows the player → crisp shadows, cheap. */
 function SunLight() {
@@ -55,9 +55,9 @@ function SunLight() {
 }
 
 export default function MarsWorld({ children }: { children?: ReactNode }) {
+  const runtime = useRef(createWorldRuntime());
   return (
-    <Canvas shadows camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 60] }} dpr={[1, 1.75]} gl={{ antialias: true }}>
-      <Input />
+    <Canvas shadows camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 60] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}>
       <fog attach="fog" args={[SKY_HORIZON, 45, 230]} />
       <hemisphereLight args={["#ffd9bd", "#7a3218", 1.0]} />
       <ambientLight intensity={0.15} />
@@ -67,9 +67,16 @@ export default function MarsWorld({ children }: { children?: ReactNode }) {
       <Rocks />
       <Landmarks />
       <DustParticles />
-      <DustDevil start={[30, -20]} />
+      <Environment runtime={runtime} />
       <Footprints />
-      <Player />
+      <Suspense fallback={null}>
+        <Physics gravity={[0, -MARS_GRAVITY, 0]} timeStep={1 / 60} interpolate>
+          <WorldColliders />
+          <Player runtime={runtime} />
+        </Physics>
+      </Suspense>
+      <CameraRig runtime={runtime} />
+      <DebugWorld runtime={runtime} />
       {children}
     </Canvas>
   );

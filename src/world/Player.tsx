@@ -1,272 +1,267 @@
 "use client";
 
-import { useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierCollider, type RapierRigidBody } from "@react-three/rapier";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
+import { ARTIFACT_ORDER, type ArtifactId } from "@/store/types";
 import { canMove, useGame } from "@/store/useGame";
-import { keys, mouse } from "./controls";
-import { colliders, playerState, teleport } from "./playerState";
-import { getHeight } from "./terrainData";
-import { MAP_CENTER, MAP_RADIUS, SPAWN } from "./zones";
+import Character from "./Character";
+import PlayerEffects from "./PlayerEffects";
+import { createWorldRuntime, type RuntimeRef } from "./runtime";
+import { groundHeight, WORLD_BOUNDS } from "./worldConfig";
+import { getStormCenter, sampleStorm, STORMS } from "./weather";
+import { MAP_CENTER, MAP_RADIUS, SCAN_RADIUS, ZONES } from "./zones";
+import { playerState, teleport as legacyTeleport } from "./playerState";
+import { JUMP_SPEED, MARS_GRAVITY as GRAVITY } from "./physics";
 
-const WALK = 6.5;
-const RUN = 11;
-const TURN = 2.3; // rad/s
-const MARS_GRAVITY = 3.71; // m/s² (38% of Earth's): jumps are floaty!
-const JUMP_SPEED = 3.4;
-const PLAYER_RADIUS = 0.45;
+const FRICTION = 14;
+const CAPSULE_CENTER = 1.17;
 
-/* ───────── Captain Pebble model (low-poly astronaut) ───────── */
-const SUIT = "#ff8a3d";
-const WHITE = "#f4f1ec";
+export default function Player({ runtime }: { runtime: RuntimeRef }) {
+  const { world, rapier } = useRapier();
+  const body = useRef<RapierRigidBody>(null);
+  const collider = useRef<RapierCollider>(null);
+  const controller = useRef<ReturnType<typeof world.createCharacterController> | null>(null);
+  const keys = useRef<Record<string, boolean>>({});
+  const input = useRef({ jumpBuffer: 0, coyote: 0.1, windTime: 0, windCooldown: 0, lastPublish: 0 });
 
-function PebbleModel({ legL, legR, armL, armR }: Record<"legL" | "legR" | "armL" | "armR", React.RefObject<THREE.Group | null>>) {
-  return (
-    <group>
-      {/* legs (pivot at hip) */}
-      {[
-        [legL, -0.17],
-        [legR, 0.17],
-      ].map(([ref, x], i) => (
-        <group key={i} ref={ref as React.RefObject<THREE.Group>} position={[x as number, 0.72, 0]}>
-          <mesh position={[0, -0.33, 0]} castShadow>
-            <capsuleGeometry args={[0.13, 0.4, 3, 8]} />
-            <meshStandardMaterial color={WHITE} flatShading />
-          </mesh>
-          <mesh position={[0, -0.66, 0.06]} castShadow>
-            <boxGeometry args={[0.24, 0.14, 0.34]} />
-            <meshStandardMaterial color="#5b5f6e" flatShading />
-          </mesh>
-        </group>
-      ))}
-      {/* body */}
-      <mesh position={[0, 1.08, 0]} castShadow>
-        <capsuleGeometry args={[0.36, 0.42, 4, 10]} />
-        <meshStandardMaterial color={SUIT} flatShading />
-      </mesh>
-      <mesh position={[0, 1.12, 0.33]} castShadow>
-        <boxGeometry args={[0.36, 0.26, 0.08]} />
-        <meshStandardMaterial color={WHITE} flatShading />
-      </mesh>
-      <mesh position={[0.08, 1.15, 0.38]}>
-        <circleGeometry args={[0.05, 10]} />
-        <meshStandardMaterial color="#5ce1e6" emissive="#5ce1e6" emissiveIntensity={0.8} />
-      </mesh>
-      {/* backpack */}
-      <mesh position={[0, 1.15, -0.38]} castShadow>
-        <boxGeometry args={[0.55, 0.62, 0.26]} />
-        <meshStandardMaterial color={WHITE} flatShading />
-      </mesh>
-      <mesh position={[0.18, 1.5, -0.42]}>
-        <cylinderGeometry args={[0.02, 0.02, 0.3]} />
-        <meshStandardMaterial color="#9aa0ad" />
-      </mesh>
-      <mesh position={[0.18, 1.67, -0.42]}>
-        <sphereGeometry args={[0.04, 8, 6]} />
-        <meshStandardMaterial color="#ff4d4d" emissive="#ff4d4d" emissiveIntensity={1} />
-      </mesh>
-      {/* arms (pivot at shoulder) */}
-      {[
-        [armL, -0.45],
-        [armR, 0.45],
-      ].map(([ref, x], i) => (
-        <group key={i} ref={ref as React.RefObject<THREE.Group>} position={[x as number, 1.32, 0]}>
-          <mesh position={[0, -0.28, 0]} castShadow>
-            <capsuleGeometry args={[0.11, 0.38, 3, 8]} />
-            <meshStandardMaterial color={SUIT} flatShading />
-          </mesh>
-          <mesh position={[0, -0.58, 0]} castShadow>
-            <sphereGeometry args={[0.12, 8, 6]} />
-            <meshStandardMaterial color={WHITE} flatShading />
-          </mesh>
-        </group>
-      ))}
-      {/* helmet */}
-      <mesh position={[0, 1.78, 0]} castShadow>
-        <sphereGeometry args={[0.38, 14, 10]} />
-        <meshStandardMaterial color={WHITE} flatShading />
-      </mesh>
-      <mesh position={[0, 1.8, 0.17]} scale={[1, 0.82, 0.75]}>
-        <sphereGeometry args={[0.3, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#1b1f3b" metalness={0.9} roughness={0.12} />
-      </mesh>
-      <mesh position={[-0.09, 1.9, 0.38]}>
-        <sphereGeometry args={[0.05, 8, 6]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
-      </mesh>
-    </group>
-  );
-}
-
-/* ───────── Player controller + camera ───────── */
-export default function Player() {
-  const root = useRef<THREE.Group>(null);
-  const body = useRef<THREE.Group>(null);
-  const legL = useRef<THREE.Group>(null);
-  const legR = useRef<THREE.Group>(null);
-  const armL = useRef<THREE.Group>(null);
-  const armR = useRef<THREE.Group>(null);
-  const { camera } = useThree();
-  const phase = useGame((s) => s.phase);
-
-  const st = useRef({
-    x: SPAWN[0],
-    z: SPAWN[1],
-    y: getHeight(SPAWN[0], SPAWN[1]),
-    vy: 0,
-    yaw: Math.PI,
-    walk: 0,
-    camDist: 8.5,
-    camPitch: 0.42,
-    jumpHeld: false,
-    lastPub: 0,
-  });
-  const camPos = useMemo(() => new THREE.Vector3(), []);
-  const lookAt = useMemo(() => new THREE.Vector3(), []);
-  const smoothLook = useRef(new THREE.Vector3(SPAWN[0], 1, SPAWN[1]));
-
-  // reset to the landing pod when a new game starts
   useEffect(() => {
-    if (phase === "intro") {
-      Object.assign(st.current, { x: SPAWN[0], z: SPAWN[1], y: getHeight(SPAWN[0], SPAWN[1]), vy: 0, yaw: Math.PI });
-    }
-  }, [phase]);
+    const character = world.createCharacterController(0.025);
+    character.setSlideEnabled(true);
+    character.enableAutostep(0.2, 0.25, false);
+    character.enableSnapToGround(0.18);
+    character.setMaxSlopeClimbAngle(Math.PI / 4);
+    character.setMinSlopeSlideAngle(Math.PI / 3);
+    controller.current = character;
+    return () => { controller.current = null; world.removeCharacterController(character); };
+  }, [world]);
 
-  useFrame(({ clock }, rawDt) => {
-    const s = st.current;
-    const dt = Math.min(rawDt, 0.05);
-    const t = clock.elapsedTime;
-    const active = canMove();
-    if (teleport.to) {
-      [s.x, s.z] = teleport.to;
-      s.y = getHeight(s.x, s.z);
-      s.vy = 0;
-      teleport.to = null;
+  useEffect(() => {
+    const clear = () => {
+      keys.current = {};
+      input.current.jumpBuffer = 0;
+    };
+    const down = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
+      if (event.target instanceof Element && event.target.matches("input, textarea, select, [contenteditable=true]")) return;
+      if (event.code === "Space" && event.target instanceof Element && event.target.closest("button, a")) return;
+      if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code) && canMove()) event.preventDefault();
+      keys.current[event.code] = true;
+      if (event.code === "Space" && !event.repeat && canMove()) input.current.jumpBuffer = 0.15;
+      if (event.code === "KeyE" && !event.repeat && canMove()) {
+        const game = useGame.getState();
+        if (game.nearArtifact && runtime.current.grounded) game.startScan(game.nearArtifact);
+      }
+    };
+    const up = (event: KeyboardEvent) => {
+      keys.current[event.code] = false;
+    };
+    const teleport = (event: Event) => {
+      const detail = (event as CustomEvent<{ x: number; z: number; y?: number }>).detail;
+      if (!detail || !Number.isFinite(detail.x) || !Number.isFinite(detail.z)) return;
+      const s = runtime.current;
+      const y = detail.y ?? groundHeight(detail.x, detail.z) + 0.15;
+      s.position.set(detail.x, y, detail.z);
+      s.velocity.set(0, 0, 0);
+      s.grounded = false;
+      s.wind = 0;
+      s.landing = 0;
+      controlsReset();
+      const translation = { x: detail.x, y: y + CAPSULE_CENTER, z: detail.z };
+      body.current?.setTranslation(translation, true);
+      body.current?.setNextKinematicTranslation(translation);
+    };
+    const controlsReset = () => {
+      clear();
+      input.current.windTime = 0;
+      input.current.windCooldown = 0;
+      input.current.coyote = 0;
+    };
+    Object.assign(playerState, { x: runtime.current.position.x, y: runtime.current.position.y, z: runtime.current.position.z, yaw: runtime.current.heading, speed: 0, grounded: true });
+    const unsubscribe = useGame.subscribe((next, previous) => {
+      if (next.phase === "menu" && previous.phase !== "menu" || next.phase === "intro" && previous.phase === "menu") {
+        runtime.current = createWorldRuntime();
+        const translation = { x: runtime.current.position.x, y: runtime.current.position.y + CAPSULE_CENTER, z: runtime.current.position.z };
+        body.current?.setTranslation(translation, true);
+        body.current?.setNextKinematicTranslation(translation);
+        input.current = { jumpBuffer: 0, coyote: 0.1, windTime: 0, windCooldown: 0, lastPublish: 0 };
+        clear();
+      }
+      if (next.paused || next.journalOpen || next.showControls || next.phase !== "explore") clear();
+      if (next.activeArtifact && next.phase !== previous.phase && previous.phase === "explore") {
+        const s = runtime.current;
+        const [x, z] = ZONES[next.activeArtifact];
+        s.heading = Math.atan2(x - s.position.x, z - s.position.z);
+        s.scanning = 1;
+        s.velocity.x = 0;
+        s.velocity.z = 0;
+      }
+    });
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    window.addEventListener("blur", clear);
+    const dev = new URLSearchParams(window.location.search).has("dev");
+    if (dev) window.addEventListener("mars:teleport", teleport);
+    return () => {
+      unsubscribe();
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.removeEventListener("blur", clear);
+      if (dev) window.removeEventListener("mars:teleport", teleport);
+    };
+  }, [runtime]);
+
+  useBeforePhysicsStep(() => {
+    const dt = Math.min(world.timestep, 0.05);
+    const s = runtime.current;
+    if (legacyTeleport.to) {
+      const [x, z] = legacyTeleport.to;
+      s.position.set(x, groundHeight(x, z) + 0.15, z);
+      s.velocity.set(0, 0, 0);
+      s.grounded = false;
+      s.wind = 0;
+      input.current.windTime = 0;
+      input.current.windCooldown = 0;
+      const translation = { x, y: s.position.y + CAPSULE_CENTER, z };
+      body.current?.setTranslation(translation, true);
+      body.current?.setNextKinematicTranslation(translation);
+      legacyTeleport.to = null;
+    }
+    const controls = input.current;
+    const game = useGame.getState();
+    const playing = canMove();
+    const paused = game.paused || game.journalOpen || game.showControls;
+    if (!paused) s.scanning = Math.max(0, s.scanning - dt * 0.42);
+    if (!playing) {
+      s.speed = THREE.MathUtils.damp(s.speed, 0, 12, dt);
+      Object.assign(playerState, { x: s.position.x, y: s.position.y, z: s.position.z, yaw: s.heading, speed: 0, grounded: s.grounded });
+      return;
+    }
+    if (!body.current || !collider.current || !controller.current) return;
+
+    s.simTime += dt;
+    const oldX = s.position.x;
+    const oldZ = s.position.z;
+    const forward = Number(Boolean(keys.current.KeyW || keys.current.ArrowUp)) - Number(Boolean(keys.current.KeyS || keys.current.ArrowDown));
+    const sideways = Number(Boolean(keys.current.KeyD || keys.current.ArrowRight)) - Number(Boolean(keys.current.KeyA || keys.current.ArrowLeft));
+    const length = Math.hypot(forward, sideways) || 1;
+    const walkSpeed = keys.current.ShiftLeft || keys.current.ShiftRight ? 11 : 6.5;
+    const desiredX = (Math.sin(s.orbitYaw) * forward - Math.cos(s.orbitYaw) * sideways) / length * walkSpeed;
+    const desiredZ = (Math.cos(s.orbitYaw) * forward + Math.sin(s.orbitYaw) * sideways) / length * walkSpeed;
+    const hasInput = Boolean(forward || sideways);
+    const h = dt;
+    {
+      controls.jumpBuffer = Math.max(0, controls.jumpBuffer - h);
+      controls.coyote = s.grounded ? 0.1 : Math.max(0, controls.coyote - h);
+      controls.windCooldown = Math.max(0, controls.windCooldown - h);
+      const wind = sampleStorm(s.position.x, s.position.z, s.simTime);
+      const caught = controls.windCooldown <= 0 && wind.strength > 0.05;
+      s.wind = THREE.MathUtils.damp(s.wind, caught ? wind.strength : 0, 6, h);
+      controls.windTime = caught && wind.strength > 0.55 ? controls.windTime + h : Math.max(0, controls.windTime - h * 2);
+
+      if (controls.jumpBuffer > 0 && controls.coyote > 0) {
+        s.velocity.y = JUMP_SPEED;
+        s.grounded = false;
+        controls.jumpBuffer = 0;
+        controls.coyote = 0;
+      }
+
+      const control = controls.windCooldown > 0 && !s.grounded ? 0.03 : caught ? 0.25 : s.grounded ? 1 : 0.38;
+      s.velocity.x = THREE.MathUtils.damp(s.velocity.x, desiredX, FRICTION * control, h);
+      s.velocity.z = THREE.MathUtils.damp(s.velocity.z, desiredZ, FRICTION * control, h);
+      if (caught) {
+        s.velocity.x += wind.forceX * h;
+        s.velocity.z += wind.forceZ * h;
+        s.velocity.y += wind.lift * h;
+        if (wind.lift > GRAVITY) s.grounded = false;
+      }
+      if (controls.windCooldown <= 0 && caught && (controls.windTime > 1.55 || s.position.y - groundHeight(s.position.x, s.position.z) > 7)) {
+        // Eject away from the nearest core, so the automatic recovery clears its influence.
+        let closest = Infinity;
+        let windHeading = s.heading;
+        for (const storm of STORMS) {
+          const center = getStormCenter(storm, s.simTime);
+          const distance = Math.hypot(s.position.x - center.x, s.position.z - center.z);
+          if (distance < closest) {
+            closest = distance;
+            windHeading = distance > 0.1 ? Math.atan2(s.position.x - center.x, s.position.z - center.z) : s.heading;
+          }
+        }
+        s.velocity.x = Math.sin(windHeading) * 15;
+        s.velocity.z = Math.cos(windHeading) * 15;
+        s.velocity.y = 6;
+        controls.windCooldown = 4.5;
+        controls.windTime = 0;
+        s.grounded = false;
+      }
+      s.velocity.y = THREE.MathUtils.clamp(s.velocity.y - GRAVITY * h, -20, 10);
+      const character = controller.current;
+      if (s.velocity.y > 0) character.disableSnapToGround();
+      else character.enableSnapToGround(0.18);
+      character.computeColliderMovement(collider.current, {
+        x: s.velocity.x * h, y: s.velocity.y * h, z: s.velocity.z * h,
+      }, rapier.QueryFilterFlags.EXCLUDE_SENSORS);
+      const corrected = character.computedMovement();
+      const translation = body.current.translation();
+      const next = {
+        x: THREE.MathUtils.clamp(translation.x + corrected.x, WORLD_BOUNDS.minX, WORLD_BOUNDS.maxX),
+        y: translation.y + corrected.y,
+        z: THREE.MathUtils.clamp(translation.z + corrected.z, WORLD_BOUNDS.minZ, WORLD_BOUNDS.maxZ),
+      };
+      const edgeX = next.x - MAP_CENTER[0];
+      const edgeZ = next.z - MAP_CENTER[1];
+      const edgeDistance = Math.hypot(edgeX, edgeZ);
+      if (edgeDistance > MAP_RADIUS - 0.5) {
+        const scale = (MAP_RADIUS - 0.5) / edgeDistance;
+        next.x = MAP_CENTER[0] + edgeX * scale;
+        next.z = MAP_CENTER[1] + edgeZ * scale;
+      }
+      body.current.setNextKinematicTranslation(next);
+      s.position.set(next.x, next.y - CAPSULE_CENTER, next.z);
+      const wasGrounded = s.grounded;
+      s.grounded = character.computedGrounded() && s.velocity.y <= 0;
+      if (s.grounded) {
+        if (!wasGrounded && s.velocity.y < -2) s.landing = THREE.MathUtils.clamp(-s.velocity.y / 10, 0.5, 1);
+        s.velocity.y = 0;
+      } else if (s.velocity.y > 0 && corrected.y < s.velocity.y * h * 0.2) s.velocity.y = 0;
+      // A recovery floor is only a failsafe for an unloaded world, not the collision solver.
+      if (s.position.y < -12) {
+        const reset = createWorldRuntime();
+        s.position.copy(reset.position);
+        s.velocity.set(0, 0, 0);
+        s.grounded = true;
+        body.current.setTranslation({ x: s.position.x, y: s.position.y + CAPSULE_CENTER, z: s.position.z }, true);
+      }
+      s.landing = Math.max(0, s.landing - h * 2.8);
     }
 
-    /* ── input → movement ── */
-    let fwd = 0;
-    let moving = false;
-    if (active) {
-      const turn = (keys.KeyA || keys.ArrowLeft ? 1 : 0) - (keys.KeyD || keys.ArrowRight ? 1 : 0);
-      fwd = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
-      s.yaw += turn * TURN * dt;
-      if (mouse.dragging || mouse.dx) s.yaw -= mouse.dx * 0.005;
-      s.camPitch = THREE.MathUtils.clamp(s.camPitch + mouse.dy * 0.003, 0.12, 1.1);
-      const speed = (keys.ShiftLeft || keys.ShiftRight ? RUN : WALK) * (fwd < 0 ? 0.6 : 1);
-      const nx = s.x + Math.sin(s.yaw) * fwd * speed * dt;
-      const nz = s.z + Math.cos(s.yaw) * fwd * speed * dt;
-      s.x = nx;
-      s.z = nz;
-      moving = fwd !== 0;
-
-      // jump (fresh press only)
-      const jumpKey = !!keys.Space;
-      if (jumpKey && !s.jumpHeld && s.y <= getHeight(s.x, s.z) + 0.01) s.vy = JUMP_SPEED;
-      s.jumpHeld = jumpKey;
-    } else {
-      s.jumpHeld = !!keys.Space;
+    s.speed = Math.hypot(s.position.x - oldX, s.position.z - oldZ) / Math.max(dt, 0.001);
+    if (hasInput && s.scanning <= 0.1) {
+      const heading = Math.atan2(desiredX, desiredZ);
+      const difference = Math.atan2(Math.sin(heading - s.heading), Math.cos(heading - s.heading));
+      s.heading += difference * (1 - Math.exp(-12 * dt));
     }
-    mouse.dx = 0;
-    mouse.dy = 0;
-    if (mouse.wheel) {
-      s.camDist = THREE.MathUtils.clamp(s.camDist + mouse.wheel * 0.8, 4.5, 16);
-      mouse.wheel = 0;
-    }
-
-    /* ── collisions: push out of rocks/machines, stay inside the map ── */
-    for (const c of colliders) {
-      const dx = s.x - c.x;
-      const dz = s.z - c.z;
-      const min = c.r + PLAYER_RADIUS;
-      const d2 = dx * dx + dz * dz;
-      if (d2 < min * min && d2 > 1e-6) {
-        const d = Math.sqrt(d2);
-        s.x = c.x + (dx / d) * min;
-        s.z = c.z + (dz / d) * min;
+    Object.assign(playerState, { x: s.position.x, y: s.position.y, z: s.position.z, yaw: s.heading, speed: s.speed, grounded: s.grounded });
+    let near: ArtifactId | null = null;
+    if (s.grounded) {
+      for (const id of ARTIFACT_ORDER) {
+        const [x, z] = ZONES[id];
+        if (Math.hypot(s.position.x - x, s.position.z - z) < SCAN_RADIUS) near = id;
       }
     }
-    const ex = s.x - MAP_CENTER[0];
-    const ez = s.z - MAP_CENTER[1];
-    const ed = Math.hypot(ex, ez);
-    if (ed > MAP_RADIUS) {
-      s.x = MAP_CENTER[0] + (ex / ed) * MAP_RADIUS;
-      s.z = MAP_CENTER[1] + (ez / ed) * MAP_RADIUS;
+    game.setNearArtifact(near);
+    controls.lastPublish += dt;
+    if (controls.lastPublish > 0.1) {
+      controls.lastPublish = 0;
+      game.setPlayer([s.position.x, s.position.z], s.orbitYaw);
     }
-
-    /* ── vertical: follow the ground, Mars-gravity jumps ── */
-    const ground = getHeight(s.x, s.z);
-    s.vy -= MARS_GRAVITY * dt;
-    s.y += s.vy * dt;
-    let grounded = false;
-    if (s.y <= ground) {
-      s.y = ground;
-      s.vy = 0;
-      grounded = true;
-    }
-
-    /* ── animation ── */
-    const speedNow = moving && grounded ? Math.abs(fwd) * (keys.ShiftLeft || keys.ShiftRight ? RUN : WALK) : 0;
-    s.walk += dt * speedNow * 1.6;
-    const swing = speedNow > 0 ? Math.sin(s.walk) * (speedNow > WALK ? 0.85 : 0.6) : 0;
-    const ease = (r: React.RefObject<THREE.Group | null>, target: number) => {
-      if (r.current) r.current.rotation.x = THREE.MathUtils.lerp(r.current.rotation.x, target, 1 - Math.pow(0.0005, dt));
-    };
-    const airPose = grounded ? 0 : -0.5;
-    ease(legL, swing + airPose * 0.4);
-    ease(legR, -swing + airPose * 0.4);
-    ease(armL, -swing * 0.8 + airPose);
-    ease(armR, swing * 0.8 + airPose);
-    if (root.current) {
-      root.current.position.set(s.x, s.y, s.z);
-      root.current.rotation.y = s.yaw;
-    }
-    if (body.current) {
-      body.current.position.y = speedNow > 0 ? Math.abs(Math.sin(s.walk)) * 0.07 : Math.sin(t * 2) * 0.015;
-      body.current.rotation.z = speedNow > 0 ? Math.sin(s.walk) * 0.04 : 0;
-    }
-
-    /* ── shared state ── */
-    playerState.x = s.x;
-    playerState.y = s.y;
-    playerState.z = s.z;
-    playerState.yaw = s.yaw;
-    playerState.speed = speedNow;
-    playerState.grounded = grounded;
-    if (t - s.lastPub > 0.1) {
-      s.lastPub = t;
-      useGame.getState().setPlayer([s.x, s.z], s.yaw);
-    }
-
-    /* ── camera ── */
-    if (useGame.getState().phase === "menu") {
-      // slow cinematic orbit around the landing pod
-      const a = t * 0.07;
-      camPos.set(SPAWN[0] + Math.sin(a) * 18, 0, SPAWN[1] + Math.cos(a) * 18);
-      camPos.y = getHeight(camPos.x, camPos.z) + 6.5;
-      lookAt.set(SPAWN[0], s.y + 2, SPAWN[1] - 6);
-    } else {
-      const horiz = Math.cos(s.camPitch) * s.camDist;
-      camPos.set(s.x - Math.sin(s.yaw) * horiz, s.y + 1.5 + Math.sin(s.camPitch) * s.camDist, s.z - Math.cos(s.yaw) * horiz);
-      const g = getHeight(camPos.x, camPos.z) + 1.2;
-      if (camPos.y < g) camPos.y = g;
-      lookAt.set(s.x, s.y + 1.5, s.z);
-    }
-    camera.position.lerp(camPos, 1 - Math.pow(0.004, dt));
-    smoothLook.current.lerp(lookAt, 1 - Math.pow(0.0005, dt));
-    camera.lookAt(smoothLook.current);
   });
 
-  return (
-    <group ref={root}>
-      <group ref={body}>
-        <PebbleModel legL={legL} legR={legR} armL={armL} armR={armR} />
-      </group>
-      {/* soft blob shadow so the player reads well on any slope */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
-        <circleGeometry args={[0.55, 16]} />
-        <meshBasicMaterial color="#000" transparent opacity={0.18} depthWrite={false} />
-      </mesh>
-    </group>
-  );
+  return <>
+    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[runtime.current.position.x, runtime.current.position.y + CAPSULE_CENTER, runtime.current.position.z]} enabledRotations={[false, false, false]}>
+      <CapsuleCollider ref={collider} args={[0.83, 0.34]} friction={0} />
+    </RigidBody>
+    <Character runtime={runtime} />
+    <PlayerEffects runtime={runtime} />
+  </>;
 }

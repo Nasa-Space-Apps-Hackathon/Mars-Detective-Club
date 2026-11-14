@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { getHeight, groundColor } from "./terrainData";
 import { MAP_CENTER } from "./zones";
@@ -9,8 +9,7 @@ const SIZE = 420;
 const SEGMENTS = 150;
 
 /** Low-poly Mars ground built from getHeight(). */
-export default function Terrain() {
-  const geometry = useMemo(() => {
+export function createTerrainGeometry() {
     const g = new THREE.PlaneGeometry(SIZE, SIZE, SEGMENTS, SEGMENTS);
     g.rotateX(-Math.PI / 2);
     g.translate(MAP_CENTER[0], 0, MAP_CENTER[1]);
@@ -35,7 +34,11 @@ export default function Terrain() {
     flat.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     g.dispose();
     return flat;
-  }, []);
+}
+
+export default function Terrain() {
+  const geometry = useMemo(createTerrainGeometry, []);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
     <mesh geometry={geometry} receiveShadow>

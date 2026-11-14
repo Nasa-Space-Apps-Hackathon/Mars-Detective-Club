@@ -1,10 +1,12 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useGame } from "@/store/useGame";
 import { getArtifact } from "@/lib/content";
 import { getObjective, nextTarget } from "@/lib/objectives";
 import { ZONES } from "@/world/zones";
+import WorldStatus, { useWorldStatus } from "./WorldStatus";
+import styles from "./ExplorationHUD.module.css";
 
 function Compass() {
   const evidence = useGame((s) => s.evidence);
@@ -13,24 +15,15 @@ function Compass() {
   const target = nextTarget(evidence);
   if (!target) return null;
   const [tx, tz] = ZONES[target];
-  const dx = tx - px;
-  const dz = tz - pz;
-  const dist = Math.round(Math.hypot(dx, dz));
-  // angle of target relative to where the player faces (world uses sin(yaw), cos(yaw) as forward)
-  const targetAngle = Math.atan2(dx, dz);
-  let rel = targetAngle - yaw;
-  rel = Math.atan2(Math.sin(rel), Math.cos(rel)); // normalize to [-π, π]
-  const deg = (-rel * 180) / Math.PI;
+  const angle = Math.atan2(tx - px, tz - pz) - yaw;
+  const degrees = -Math.atan2(Math.sin(angle), Math.cos(angle)) * 180 / Math.PI;
+  const distance = Math.round(Math.hypot(tx - px, tz - pz));
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="glass rounded-full w-20 h-20 grid place-items-center relative">
-        <motion.div animate={{ rotate: deg }} transition={{ type: "spring", stiffness: 120, damping: 18 }} className="w-10 h-10">
-          <svg viewBox="0 0 40 40" className="w-full h-full" aria-label="Direction to next machine">
-            <path d="M20 3 L33 34 L20 26 L7 34 Z" fill="#5ce1e6" stroke="#1b1f3b" strokeWidth="2" strokeLinejoin="round" />
-          </svg>
-        </motion.div>
-      </div>
-      <span className="glass rounded-full px-3 py-0.5 text-sm font-display">{dist} m</span>
+    <div className={styles.compass} aria-label={`Next destination: ${getArtifact(target).shortName}, ${distance} metres away`}>
+      <motion.div className={styles.compassArrow} animate={{ rotate: degrees }} transition={{ duration: 0 }}>
+        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4 32 33 20 26 8 33Z" fill="#5ce1e6" stroke="#b8eeee" strokeWidth="1.5" strokeLinejoin="round" /></svg>
+      </motion.div>
+      <div className={styles.destination}><strong>{getArtifact(target).shortName}</strong><span>{distance} m to next clue</span></div>
     </div>
   );
 }
@@ -40,85 +33,56 @@ export default function HUD() {
   const evidence = useGame((s) => s.evidence);
   const near = useGame((s) => s.nearArtifact);
   const muted = useGame((s) => s.muted);
+  const paused = useGame((s) => s.paused);
+  const journalOpen = useGame((s) => s.journalOpen);
+  const showControls = useGame((s) => s.showControls);
   const toggleJournal = useGame((s) => s.toggleJournal);
   const togglePause = useGame((s) => s.togglePause);
   const toggleMute = useGame((s) => s.toggleMute);
   const startScan = useGame((s) => s.startScan);
-  const exploring = phase === "explore";
+  const steady = useWorldStatus((s) => s.steadyCamera);
+  const grounded = useWorldStatus((s) => s.grounded);
+  const toggleSteady = useWorldStatus((s) => s.toggleSteadyCamera);
+  const reduced = useReducedMotion();
+  const interactive = phase === "explore" && !paused && !journalOpen && !showControls;
   const nearSolved = near ? evidence.includes(near) : false;
 
   return (
-    <div className="absolute inset-0 pointer-events-none">
-      {/* top-left objective */}
-      <motion.div initial={{ x: -30, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="absolute top-4 left-4 max-w-sm">
-        <div className="glass rounded-2xl px-4 py-3">
-          <p className="text-xs font-display uppercase tracking-widest text-glow">Case #001 · Did Mars have water?</p>
-          <p className="font-display text-lg leading-tight mt-0.5">{getObjective({ phase, evidence })}</p>
-        </div>
-      </motion.div>
-
-      {/* top-right evidence + buttons */}
-      <div className="absolute top-4 right-4 flex items-start gap-2 pointer-events-auto">
-        <button
-          onClick={() => toggleJournal()}
-          disabled={!exploring}
-          className="glass rounded-2xl px-4 py-2 font-display text-lg flex items-center gap-2 hover:border-glow disabled:opacity-60 cursor-pointer"
-          aria-label="Open journal"
-        >
-          🔎 <span className="font-bold">{evidence.length}/3</span>
-          <span className="text-sm opacity-80 hidden md:inline">
-            Journal <kbd>J</kbd>
-          </span>
+    <div className={styles.hud}>
+      <div className={styles.mission}>
+        <h1>Did Mars have water?</h1>
+        <p>{getObjective({ phase, evidence })}</p>
+      </div>
+      <div className={styles.actions}>
+        <button onClick={() => toggleJournal()} disabled={!interactive} className={styles.action} aria-label={`Open journal, ${evidence.length} of 3 evidence cards`} title="Journal (J)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h13a1 1 0 0 1 1 1v17H6a3 3 0 0 1-3-3V5a2 2 0 0 1 2-2Zm1 0v18M9 8h7M9 12h5" /></svg>
+          <span className={styles.counter}>{evidence.length}/3</span>
         </button>
-        <button onClick={toggleMute} className="glass rounded-2xl w-11 h-11 grid place-items-center cursor-pointer" aria-label={muted ? "Unmute" : "Mute"}>
-          {muted ? "🔇" : "🔊"}
+        <button onClick={toggleMute} className={styles.action} aria-label={muted ? "Unmute sound" : "Mute sound"} title={muted ? "Unmute sound" : "Mute sound"}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m11 4-6 5H2v6h3l6 5Z" />{muted ? <path d="m16 9 6 6m0-6-6 6" /> : <path d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" />}</svg>
         </button>
-        <button
-          onClick={() => togglePause(true)}
-          disabled={!exploring}
-          className="glass rounded-2xl w-11 h-11 grid place-items-center cursor-pointer disabled:opacity-60"
-          aria-label="Pause"
-        >
-          ⏸
+        <button onClick={toggleSteady} className={styles.action} aria-pressed={steady} aria-label="Steady camera: reduce shake and speed effects" title={steady ? "Steady camera on" : "Enable steady camera"}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4v13H4Z" /><circle cx="12" cy="13" r="3.5" /></svg>
+        </button>
+        <button onClick={() => togglePause(true)} disabled={!interactive} className={styles.action} aria-label="Pause game" title="Pause (Esc)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" strokeWidth="3" /></svg>
         </button>
       </div>
-
-      {/* compass bottom-right */}
-      {exploring && (
-        <div className="absolute bottom-6 right-6">
-          <Compass />
-        </div>
-      )}
-
-      {/* scan prompt */}
+      {interactive && <><Compass /><WorldStatus /></>}
       <AnimatePresence>
-        {exploring && near && (
-          <motion.div
-            key={near}
-            initial={{ y: 30, opacity: 0, scale: 0.9 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            className="absolute bottom-24 inset-x-0 flex justify-center pointer-events-auto"
-          >
-            <button
-              onClick={() => startScan(near)}
-              className="glass rounded-2xl px-6 py-3 font-display text-xl flex items-center gap-3 border-glow cursor-pointer hover:scale-105 transition"
-            >
+        {interactive && near && (
+          <div className={styles.scan} key={near}>
+            <motion.button className={styles.scanButton} disabled={!grounded} initial={{ opacity: 0, y: reduced ? 0 : 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }} onClick={() => startScan(near)}>
               <kbd>E</kbd>
-              {nearSolved ? `Re-read ${getArtifact(near).shortName}'s file` : `Scan ${getArtifact(near).name}`}
-              <span className="text-glow animate-pulse">◉</span>
-            </button>
-          </motion.div>
+              <span className={styles.scanText}><strong>{!grounded ? "Land to scan" : nearSolved ? `Revisit ${getArtifact(near).shortName}` : `Scan ${getArtifact(near).shortName}`}</strong><small>{nearSolved ? "Open the mission file again" : "A discovery is waiting inside"}</small></span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8V3h5m8 0h5v5m0 8v5h-5M8 21H3v-5M5 12h14" /></svg>
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
-
-      {/* controls hint bottom-left */}
-      {exploring && (
-        <div className="absolute bottom-6 left-6 glass rounded-2xl px-4 py-2 text-sm text-white/85 hidden md:block">
-          <kbd>W</kbd>
-          <kbd>A</kbd>
-          <kbd>S</kbd>
-          <kbd>D</kbd> move · <kbd>Shift</kbd> run · <kbd>Space</kbd> jump · <kbd>E</kbd> scan · <kbd>Esc</kbd> pause
+      {interactive && (
+        <div className={styles.controls} aria-label="Game controls">
+          <span><kbd>WASD</kbd> move</span><span><kbd>Space</kbd> jump</span><span><kbd>Shift</kbd> sprint</span><span>Drag to look</span><span>Scroll to zoom</span><span><kbd>R</kbd> recenter</span>
         </div>
       )}
     </div>

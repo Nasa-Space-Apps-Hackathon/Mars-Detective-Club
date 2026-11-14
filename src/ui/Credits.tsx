@@ -58,6 +58,10 @@ export default function Credits() {
               </li>
             ))}
             <li className="bg-white/5 rounded-xl px-4 py-2">
+              3D models: <a className="underline text-glow" href="https://science.nasa.gov/3d-resources/viking-lander/" target="_blank" rel="noreferrer">Viking Lander — NASA / Michael D. Carbajal</a>
+              {" · "}<a className="underline text-glow" href="https://science.nasa.gov/3d-resources/mars-exploration-rover-opportunity-mer-b/" target="_blank" rel="noreferrer">Opportunity — NASA / Ames Research Center</a>
+            </li>
+            <li className="bg-white/5 rounded-xl px-4 py-2">
               Challenge:{" "}
               <a className="underline text-glow" href="https://www.spaceappschallenge.org/" target="_blank" rel="noreferrer">
                 NASA Space Apps Challenge
@@ -68,6 +72,10 @@ export default function Credits() {
 
         <section>
           <h3 className="font-display text-2xl font-bold mb-3">🤖 AI use disclosure</h3>
+          <p className="text-white/85 text-base mb-3">
+            The world upgrade, including procedural character geometry, animation, clouds, weather effects and integration code, was developed with OpenAI Codex assistance.
+            Viking and Opportunity use original NASA 3D assets. Phoenix is a stylized representation. Wind forces are exaggerated for this simulation.
+          </p>
           <p className="text-white/85 text-[16px]">
             Per Space Apps rules: list every AI-generated asset (images, 3D models, voice, code) here. TODO(team): fill in, e.g. &ldquo;Ziggy 3D model generated with … · Code written
             with AI assistance (Claude)&rdquo;.

@@ -4,42 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { mulberry32 } from "./noise";
 import { addColliders, type Collider } from "./playerState";
-import { frostAmount, getHeight } from "./terrainData";
-import { MAP_CENTER, MAP_RADIUS, PAD_RADIUS, SPAWN, ZONES } from "./zones";
-
-interface RockData {
-  x: number;
-  y: number;
-  z: number;
-  s: number;
-  rx: number;
-  ry: number;
-  frost: boolean;
-}
-
-const COUNT = 260;
-
-function buildRocks(): RockData[] {
-  const rnd = mulberry32(42);
-  const keepClear: [number, number, number][] = [
-    ...Object.values(ZONES).map(([x, z]) => [x, z, PAD_RADIUS + 2] as [number, number, number]),
-    [SPAWN[0], SPAWN[1], PAD_RADIUS + 3],
-  ];
-  const rocks: RockData[] = [];
-  let tries = 0;
-  while (rocks.length < COUNT && tries++ < COUNT * 20) {
-    const a = rnd() * Math.PI * 2;
-    const d = Math.sqrt(rnd()) * (MAP_RADIUS + 25);
-    const x = MAP_CENTER[0] + Math.cos(a) * d;
-    const z = MAP_CENTER[1] + Math.sin(a) * d;
-    if (keepClear.some(([cx, cz, r]) => Math.hypot(x - cx, z - cz) < r)) continue;
-    // mostly small, a few big boulders
-    const big = rnd() < 0.12;
-    const s = big ? 1.6 + rnd() * 2.2 : 0.25 + rnd() * 0.9;
-    rocks.push({ x, y: getHeight(x, z) + s * 0.25, z, s, rx: rnd() * 6, ry: rnd() * 6, frost: frostAmount(x, z) > 0.5 });
-  }
-  return rocks;
-}
+import { ROCK_DATA, type RockData } from "./rockData";
 
 function RockBatch({ rocks, color }: { rocks: RockData[]; color: string }) {
   const ref = useRef<THREE.InstancedMesh>(null);
@@ -65,7 +30,7 @@ function RockBatch({ rocks, color }: { rocks: RockData[]; color: string }) {
 }
 
 export default function Rocks() {
-  const rocks = useMemo(buildRocks, []);
+  const rocks = ROCK_DATA;
   const groups = useMemo(() => {
     const rnd = mulberry32(7);
     const a: RockData[] = [];

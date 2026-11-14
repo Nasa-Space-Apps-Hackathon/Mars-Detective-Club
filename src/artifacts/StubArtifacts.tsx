@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ⚠️ PERSON 2 PLACEHOLDER (machines, scan interaction, Ziggy).
+ * NASA Viking/Opportunity models and a stylized Phoenix representation.
  * Person 2 replaces the primitive models with real GLB models, but keeps:
  *   - setNearArtifact(id | null) every frame (proximity)
  *   - startScan(id) on the E key
@@ -10,17 +10,37 @@
  */
 
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
+import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { canMove, useGame } from "@/store/useGame";
+import { useGame } from "@/store/useGame";
 import { ARTIFACT_ORDER, type ArtifactId } from "@/store/types";
-import { addColliders, playerState } from "@/world/playerState";
+import { addColliders } from "@/world/playerState";
 import { getHeight } from "@/world/terrainData";
 import { SCAN_RADIUS, ZONES } from "@/world/zones";
 
 const metal = "#d9d4cc";
 const gold = "#d6a43a";
 const panel = "#2b3f75";
+
+function NasaModel({ id }: { id: "viking1" | "opportunity" }) {
+  const { scene } = useGLTF(`/models/${id}.glb`, "/draco/");
+  const model = useMemo(() => {
+    const object = scene.clone(true);
+    object.updateMatrixWorld(true);
+    const bounds = new THREE.Box3().setFromObject(object);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    const scale = (id === "viking1" ? 2 : 1.5) / size.y;
+    object.scale.multiplyScalar(scale);
+    object.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
+    object.traverse((child) => {
+      if (child instanceof THREE.Mesh) { child.castShadow = true; child.receiveShadow = true; }
+    });
+    return object;
+  }, [scene, id]);
+  return <primitive object={model} />;
+}
 
 function VikingModel() {
   return (
@@ -148,7 +168,7 @@ function Machine({ id }: { id: ArtifactId }) {
   return (
     <group position={[x, y, z]}>
       <group rotation={[0, (x + z) * 0.1, 0]}>
-        <Model />
+        {id === "phoenix" ? <Model /> : <Suspense fallback={<Model />}><NasaModel id={id} /></Suspense>}
       </group>
       <mesh ref={beam} position={[0, 30, 0]}>
         <cylinderGeometry args={[0.7, 0.7, 60, 12, 1, true]} />
@@ -166,68 +186,6 @@ function Machine({ id }: { id: ArtifactId }) {
   );
 }
 
-function Ziggy() {
-  const ref = useRef<THREE.Group>(null);
-  useFrame(({ clock }, dt) => {
-    const g = ref.current;
-    if (!g) return;
-    const t = clock.elapsedTime;
-    const tx = playerState.x + Math.sin(playerState.yaw + 1.1) * 1.5;
-    const tz = playerState.z + Math.cos(playerState.yaw + 1.1) * 1.5;
-    const k = 1 - Math.pow(0.02, Math.min(dt, 0.05));
-    g.position.x += (tx - g.position.x) * k;
-    g.position.z += (tz - g.position.z) * k;
-    g.position.y = playerState.y + 2.3 + Math.sin(t * 2.5) * 0.18;
-    g.rotation.y = playerState.yaw + Math.sin(t) * 0.3;
-  });
-  return (
-    <group ref={ref}>
-      <mesh castShadow>
-        <icosahedronGeometry args={[0.35, 1]} />
-        <meshStandardMaterial color="#f2f2f2" flatShading />
-      </mesh>
-      <mesh position={[0, 0, 0.28]}>
-        <sphereGeometry args={[0.12, 10, 8]} />
-        <meshBasicMaterial color="#5CE1E6" />
-      </mesh>
-      <mesh position={[0, 0.45, 0]}>
-        <boxGeometry args={[0.9, 0.03, 0.08]} />
-        <meshStandardMaterial color="#ff8a3d" />
-      </mesh>
-    </group>
-  );
-}
-
-/** Proximity check + E key → store. */
-function ScanLogic() {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code !== "KeyE") return;
-      const s = useGame.getState();
-      if (s.nearArtifact && canMove()) s.startScan(s.nearArtifact);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-  useFrame(() => {
-    let near: ArtifactId | null = null;
-    for (const id of ARTIFACT_ORDER) {
-      const [zx, zz] = ZONES[id];
-      if (Math.hypot(playerState.x - zx, playerState.z - zz) < SCAN_RADIUS) near = id;
-    }
-    useGame.getState().setNearArtifact(near);
-  });
-  return null;
-}
-
 export default function StubArtifacts() {
-  return (
-    <>
-      {ARTIFACT_ORDER.map((id) => (
-        <Machine key={id} id={id} />
-      ))}
-      <Ziggy />
-      <ScanLogic />
-    </>
-  );
+  return <>{ARTIFACT_ORDER.map((id) => <Machine key={id} id={id} />)}</>;
 }
