@@ -1,5 +1,5 @@
 {
-  "_note": "DRAFT by Person 4. Person 3 must verify every fact against the NASA sources listed and replace/extend. Keep the same keys.",
+  "_note": "Person 3: facts verified against NASA/JPL pages. Keys are unchanged from before's draft so the UI keeps working :)",
   "viking1": {
     "id": "viking1",
     "name": "Viking 1 Lander",
@@ -10,21 +10,24 @@
     "landed": "20 Jul 1976",
     "year": 1976,
     "realLocation": "Chryse Planitia (\"Plains of Gold\"), northern Mars",
-    "purpose": "Take the first pictures from the surface of Mars and test the soil and air for signs of life.",
-    "howItWorked": "A robotic arm scooped soil into tiny onboard labs. They heated it, fed it nutrients, and sniffed the gases that came out.",
-    "discovery": "Mars soil reacted in surprising ways, but no living things or organic molecules were confirmed. Scientists still debate the results today.",
-    "whyStopped": "It worked for more than 6 years. In November 1982 a wrong command sent from Earth cut off communication for good.",
-    "funFact": "Viking 1 sent back the very first photo ever taken on the surface of Mars, a picture of its own foot!",
+    "purpose": "Take pictures from the surface of Mars and test the soil for signs of life. It was the first US lander to work on Mars.",
+    "howItWorked": "A robotic arm scooped up soil and put it into tiny labs inside the lander. The labs heated it, fed it nutrients, and sniffed the gases that came out. Power came from a small nuclear generator, so it did not need sunlight.",
+    "discovery": "Three biology experiments found strange chemical activity in the soil, but no clear sign of living things. A separate test found no organic (carbon) molecules. Scientists concluded Viking did not find life, though some details are still discussed today.",
+    "whyStopped": "Viking 1 worked for more than 6 years, far longer than the 90 days planned. In November 1982 a faulty command sent from Earth interrupted its communications. Engineers tried for months to wake it up, but it never answered.",
+    "funFact": "Just 25 seconds after landing, Viking 1 began sending home the first picture ever taken on the surface of Mars!",
     "color": "#E8A86B",
     "sources": [
-      { "label": "NASA Science: Viking 1", "url": "https://science.nasa.gov/mission/viking-1/" },
-      { "label": "NSSDCA: Viking 1 Lander", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C" }
+      { "label": "NASA Science: Viking 1", "url": "https://science.nasa.gov/mission/viking-1" },
+      { "label": "JPL: Attempts to contact Viking 1 ended", "url": "https://www.jpl.nasa.gov/news/attempts-to-communicate-to-viking-lander-1-concluded/" },
+      { "label": "NSSDCA: Viking 1 Lander", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1975-075C" },
+      { "label": "NASA Science: Viking Lander overview", "url": "https://science.nasa.gov/resource/viking-lander-model" }
     ],
     "evidenceCard": {
       "title": "Active Soil",
       "clue": "Mars soil is chemically active, but Viking could NOT prove there is life."
     }
   },
+
   "opportunity": {
     "id": "opportunity",
     "name": "Opportunity Rover",
@@ -35,21 +38,25 @@
     "landed": "25 Jan 2004",
     "year": 2004,
     "realLocation": "Meridiani Planum, near the Martian equator",
-    "purpose": "Act like a robot geologist: drive around and find rocks that remember if water was ever there.",
-    "howItWorked": "Solar panels powered six wheels, cameras, and a robotic arm with a rock grinder and microscope.",
-    "discovery": "It found tiny round \"blueberries\" made of hematite and layered rocks. Both usually form in water. Mars was once wet!",
-    "whyStopped": "A giant dust storm covered the whole planet in 2018 and blocked the sunlight its solar panels needed.",
-    "funFact": "It was planned to work for 90 Mars days but kept going for almost 15 years and drove farther than a marathon!",
+    "purpose": "Be a robot geologist: drive around Mars and read the rocks, looking for clues about whether water was ever there.",
+    "howItWorked": "Solar panels powered six wheels, cameras, and a robotic arm with a rock grinder and a microscope camera. It could grind into a rock and check what it was made of.",
+    "discovery": "Opportunity found tiny round spheres inside layered rock, nicknamed \"blueberries\" because they look like berries in a muffin (made of the mineral hematite, a mineral that mostly forms when water is around). So, scientists concluded the rock was soaked by liquid water long ago. That is strong evidence that ancient Mars had water.",
+    "whyStopped": "A planet-wide dust storm in June 2018 blocked the sunlight its solar panels needed. Its last signal arrived on 10 June 2018. After more than a thousand recovery commands, NASA declared the mission over on 13 February 2019.",
+    "funFact": "Opportunity was built to work for about 90 Mars days. It kept going for nearly 15 years, about 60 times longer than planned, and drove more than 45 km (28 miles), farther than a marathon!",
     "color": "#5CE1E6",
     "sources": [
-      { "label": "NASA Science: Opportunity", "url": "https://science.nasa.gov/mission/mer-opportunity/" },
-      { "label": "NSSDCA: MER-B", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-032A" }
+      { "label": "NASA Astrobiology: Mission comes to an end", "url": "https://astrobiology.nasa.gov/news/opportunity-rover-mission-comes-to-an-end/" },
+      { "label": "NASA Astrobiology: Evidence of water", "url": "https://astrobiology.nasa.gov/news/check-type-evidence-of-water-found-on-mars/" },
+      { "label": "NASA Science: Meridiani Planum", "url": "https://science.nasa.gov/resource/meridiani-planum-2/" },
+      { "label": "NSSDCA: MER-B", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2003-032A" },
+      { "label": "JPL: Opportunity mission ends", "url": "https://www.jpl.nasa.gov/news/nasas-opportunity-rover-mission-on-mars-comes-to-end/" }
     ],
     "evidenceCard": {
       "title": "Water Rocks",
-      "clue": "Some Mars rocks formed in water a very long time ago."
+      "clue": "Some Mars rocks were changed by liquid water a very long time ago."
     }
   },
+  
   "phoenix": {
     "id": "phoenix",
     "name": "Phoenix Mars Lander",
@@ -59,20 +66,22 @@
     "launched": "4 Aug 2007",
     "landed": "25 May 2008",
     "year": 2008,
-    "realLocation": "Vastitas Borealis, the icy plains near the north pole",
-    "purpose": "Dig into the frozen ground near the north pole and study ice and soil.",
-    "howItWorked": "A robotic arm dug small trenches. Ovens on the lander heated soil samples to see what was inside.",
-    "discovery": "Bright white chunks in a trench disappeared after a few days. They were water ice turning straight into vapor. Phoenix also confirmed water in a heated soil sample.",
-    "whyStopped": "Polar winter arrived. Without enough sunlight its solar panels stopped working, and contact was lost in November 2008.",
-    "funFact": "The scientists nicknamed the trench where the ice vanished \"Dodo-Goldilocks\".",
+    "realLocation": "Vastitas Borealis, the icy plains of Mars' far north",
+    "purpose": "Land in the icy far north of Mars, dig into the frozen ground, and find out if there is water ice under the soil.",
+    "howItWorked": "A robotic arm dug shallow trenches in the icy ground. It carried soil to tiny ovens and a mini lab on the lander, which heated it to see what was inside.",
+    "discovery": "Bright, dice-size crumbs showed up in a trench. Four days later they were gone! Salt would have stayed, so it was water ice turning into vapor and floating away. On 31 July 2008 NASA announced that Phoenix had found water in a heated soil sample.",
+    "whyStopped": "Phoenix worked longer than the 90 days planned. But as summer ended, the Sun sank lower and its solar panels made less power. Its last signal came on 2 November 2008, before its power ran out.",
+    "funFact": "Scientists named the trench where the ice vanished \"Dodo-Goldilocks\".",
     "color": "#B8E6FF",
     "sources": [
+      { "label": "JPL: Bright chunks must have been ice", "url": "https://www.jpl.nasa.gov/news/bright-chunks-at-phoenix-landers-mars-site-must-have-been-ice/" },
       { "label": "NASA Science: Phoenix", "url": "https://science.nasa.gov/mission/phoenix/" },
-      { "label": "NSSDCA: Phoenix", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-034A" }
+      { "label": "NSSDCA: Phoenix", "url": "https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=2007-034A" },
+      { "label": "NASA Photojournal: Phoenix's Lay of the Land", "url": "https://photojournal.jpl.nasa.gov/catalog/PIA10908" }
     ],
     "evidenceCard": {
       "title": "Hidden Ice",
-      "clue": "There is frozen water ice on Mars today, just under the soil."
+      "clue": "There is frozen water ice on Mars today, just under the soil in the far north."
     }
   }
 }
