@@ -114,16 +114,10 @@ export default function Credits() {
           </h3>
           <p className="text-white/85 text-base mb-3">
             The world upgrade, including procedural character geometry,
-            animation, clouds, weather effects and integration code, was
-            developed with OpenAI Codex assistance. Viking and Opportunity use
+            animation, clouds, weather effects and code, was
+            developed with OpenAI Codex and claude assistance. Viking and Opportunity use
             original NASA 3D assets. Phoenix is a stylized representation. Wind
             forces are exaggerated for this simulation.
-          </p>
-          <p className="text-white/85 text-[16px]">
-            Per Space Apps rules: list every AI-generated asset (images, 3D
-            models, voice, code) here. TODO(team): fill in, e.g. &ldquo;Ziggy 3D
-            model generated with … · Code written with AI assistance
-            (Claude)&rdquo;.
           </p>
         </section>
 
