@@ -48,8 +48,9 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
     const t = s.simTime;
     const hold = useInteraction.getState();
     const collecting = s.grounded && hold.holding && hold.target?.startsWith("salvage:");
+    const operatingMachine = s.grounded && hold.holding && Boolean(hold.target?.startsWith("artifact:"));
     const operatingShip = s.grounded && (hold.holding && hold.target === "ship" || active.phase === "shop");
-    a.terminal = THREE.MathUtils.damp(a.terminal, operatingShip ? 1 : 0, 9, dt);
+    a.terminal = THREE.MathUtils.damp(a.terminal, operatingShip || operatingMachine ? 1 : 0, 9, dt);
     a.pickup = THREE.MathUtils.damp(a.pickup, collecting ? 1 : 0, collecting ? 9 : 6, dt);
     a.reach = THREE.MathUtils.damp(a.reach, collecting ? THREE.MathUtils.smoothstep(hold.progress, 0.15, 0.78) : 0, 12, dt);
     const inspecting = active.phase === "explore" && s.grounded && !active.nearArtifact && !active.nearShip
@@ -120,7 +121,7 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
       const pickupBend = THREE.MathUtils.lerp(THREE.MathUtils.lerp(bend, 0.38, a.scan), 0.12, a.reach);
       rightElbow.current.rotation.x = THREE.MathUtils.damp(rightElbow.current.rotation.x, -THREE.MathUtils.lerp(pickupBend, 0.55, a.terminal), 14, dt);
     }
-    if (scanner.current) scanner.current.visible = a.scan > 0.08;
+    if (scanner.current) scanner.current.visible = a.scan > 0.08 || operatingMachine;
     if (scanBeam.current) {
       scanBeam.current.visible = a.scan > 0.15 && Boolean(active.activeArtifact);
       if (active.activeArtifact) {

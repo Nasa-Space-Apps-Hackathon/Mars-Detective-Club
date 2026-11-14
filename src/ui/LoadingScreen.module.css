@@ -4,7 +4,7 @@
   z-index: 100;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  overflow: clip;
   background: #171431;
   color: #fff8ed;
 }
@@ -129,11 +129,11 @@
 
 @media (max-width: 700px) and (orientation: portrait) {
   .panel {
-    position: fixed;
+    position: absolute;
     top: auto;
-    bottom: 24px;
+    bottom: calc((100% - 100dvh) / 2 + 24px);
     left: 50%;
-    width: min(calc(100% - 32px), 420px);
+    width: min(calc(100vw - 32px), 420px);
     max-height: calc(100dvh - 48px);
     overflow: auto;
     transform: translateX(-50%);
