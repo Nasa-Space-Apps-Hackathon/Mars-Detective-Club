@@ -69,41 +69,6 @@ Viking 1 and Opportunity now load local NASA GLB models using Drei. Model source
 
 ---
 
-## 🤝 Integration guide
-
-### The map (Abdelrahman Hussien) 
-- Spawn at the landing pod (south) → **Viking 1** (west plains, ~95 m) → **Opportunity** (inside a small "Eagle" crater, east, ~130 m) → **Phoenix** (icy polar north, ~110 m).
-- `getHeight(x, z)` from `world/terrainData.ts` returns the ground height anywhere. **Always use it** to place things on the ground.
-- Change machine positions only in `world/zones.ts` (the terrain flattens a pad under each one automatically).
-
-### Machines, scan and Ziggy (Mazen yahia)
-`artifacts/StubArtifacts.tsx` renders the machines, including local NASA models. The upgraded `world/Player.tsx` owns grounded proximity and scan input; `world/Character.tsx` owns Pebble's scan gesture and Ziggy.
-
-| Must do | How |
-|---|---|
-| Place each machine at `ZONES[id]`, on the ground | `const y = getHeight(x, z)` |
-| Tell the UI which machine is in range | Already handled by `world/Player.tsx` while grounded |
-| Start the scan on **E** | Already handled by `world/Player.tsx`; HUD buttons use the same store action |
-| Block the player from walking through machines | Fixed Rapier shapes live in `world/WorldColliders.tsx`; update them when changing model dimensions |
-
-Read the player's live position inside `useFrame` from `playerState` (`x, y, z, yaw, speed, grounded`), e.g. to make Ziggy follow.
-
-### UI (Jala Samir) 
-Everything after `startScan(id)` is handled by the UI: dialogue → case file → activity → Evidence Card → back to `explore`. After 3/3 cards → case board ending → credits.
-
-**Phases:** `menu → intro → explore ⇄ (dialogue → memory → activity → evidence) → ending → credits`. The player can only move while `canMove()` is true.
-
-### Dev tools
-Open `?dev=1`: jump to any phase, fake a scan, open an activity, unlock evidence, or **tp** (teleport next to a machine).
-
----
-
-## Content rules (Malak Mostafa)
-
-- Every fact in `src/content/*.json` has been checked against NASA and JPL pages. The log is in [SOURCES.md](SOURCES.md). Re-check and update the log if you change a fact.
-- Dialogue keys: `intro`, `<id>_intro`, `<id>_outro`, `case_ready`. Speakers: `ziggy`, `pebble`, `narrator`.
-- To add a real NASA photo: put it in `public/images/` and set `"image": "/images/viking1.jpg"` + `"imageCredit"`. Otherwise an illustration is shown.
-
 ## Before submission
 
 - [x] Team names + GitHub URL in `src/ui/Credits.tsx`
