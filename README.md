@@ -4,9 +4,11 @@
 
 Case #001: *Did Mars ever have water?* Kids (9–14) play Captain Pebble with the robot sidekick Ziggy. They visit three real NASA machines on Mars (**Viking 1**, **Opportunity**, **Phoenix**), solve a mini science activity at each, collect 3 Evidence Cards, and solve the case on a timeline board.
 
-**Handoff and current progress:** [PROJECT_PROGRESS.md](PROJECT_PROGRESS.md). Project instructions for future coding sessions are in [AGENTS.md](AGENTS.md).
+**Live demo:** https://mars-detective-club.from-masr.com · **Source:** https://github.com/Nasa-Space-Apps-Hackathon/Mars-Detective-Club
 
-**Live demo:** _TODO (Vercel URL)_ · **Stack:** Next.js 15 · TypeScript · React Three Fiber · Zustand · Tailwind v4 · motion
+**Fact-check log and credits:** [SOURCES.md](SOURCES.md)
+
+**Stack:** Next.js 15 · TypeScript · React Three Fiber · Zustand · Tailwind v4 · motion
 
 ---
 
@@ -16,10 +18,10 @@ Case #001: *Did Mars ever have water?* Kids (9–14) play Captain Pebble with th
 npm install
 npm run dev          # http://localhost:3000
 # open http://localhost:3000/?dev=1 for the Dev Panel (jump to any phase / fake scans)
-npm run build        # static export → /out (deploys to Vercel as-is)
+npm run build        # static export → /out (plain static files, host anywhere)
 ```
 
-> Windows + PowerShell blocks `npm.ps1`? Use **Command Prompt (cmd)** instead.
+> Windows + PowerShell blocks `npm.ps1`? Type `npm.cmd` instead of `npm`, or use **Command Prompt (cmd)**.
 
 ---
 
@@ -98,13 +100,15 @@ Open `?dev=1`: jump to any phase, fake a scan, open an activity, unlock evidence
 
 ## Content rules (Person 3)
 
-- `artifacts.json` and `dialogue.json` are **drafts**. Every fact must be checked against the listed NASA source before submission.
+- Every fact in `src/content/*.json` has been checked against NASA and JPL pages. The log is in [SOURCES.md](SOURCES.md). Re-check and update the log if you change a fact.
 - Dialogue keys: `intro`, `<id>_intro`, `<id>_outro`, `case_ready`. Speakers: `ziggy`, `pebble`, `narrator`.
 - To add a real NASA photo: put it in `public/images/` and set `"image": "/images/viking1.jpg"` + `"imageCredit"`. Otherwise an illustration is shown.
 
 ## Before submission
 
-- [ ] Team names + GitHub URL in `src/ui/Credits.tsx`
+- [x] Team names + GitHub URL in `src/ui/Credits.tsx`
 - [ ] AI-use disclosure filled in `src/ui/Credits.tsx` (Space Apps rule)
-- [ ] All facts verified (Person 3)
-- [ ] Live Vercel link in this README
+- [x] All facts verified (Person 3), logged in `SOURCES.md`
+- [x] Live link in this README
+- [ ] Music and sound-effect credits with licenses
+- [ ] Demo video and slides
