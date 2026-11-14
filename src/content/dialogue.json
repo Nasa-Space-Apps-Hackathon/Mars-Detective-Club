@@ -1,44 +1,55 @@
 {
-  "_note": "DRAFT by Person 4. Person 3 owns the final wording. Keys: intro, <id>_intro, <id>_outro, case_ready. Speakers: ziggy | pebble | narrator",
+  "_note": "Person 3: final wording but ofc we took some inspiration from person 4's draft. Keys: intro, <id>_intro, <id>_outro, case_ready. Speakers: ziggy | pebble | narrator. Keep lines short (reading level 9-14).",
   "intro": [
     { "speaker": "narrator", "text": "Welcome to the Mars Detective Club, Captain Pebble." },
     { "speaker": "ziggy", "text": "Beep boop! Hi Captain! I'm Ziggy, your flying detective assistant. I'm 87% genius and 13% propeller." },
     { "speaker": "ziggy", "text": "Our first case is a BIG one: Case #001. Did Mars ever have water?" },
     { "speaker": "pebble", "text": "Can't we just ask somebody?" },
-    { "speaker": "ziggy", "text": "Nope! Real detectives find clues. NASA left three old machines on Mars, and each one discovered something important." },
+    { "speaker": "ziggy", "text": "Nope! Real detectives follow clues. NASA left three old machines on Mars, and each one found a different piece of the puzzle." },
     { "speaker": "ziggy", "text": "Find them, scan them, and collect 3 Evidence Cards. Then we crack the case together!" },
-    { "speaker": "narrator", "text": "This is a virtual Mars. The real machines are far apart, so their true landing sites are written on every Evidence Card." }
+    { "speaker": "narrator", "text": "This is a virtual Mars. The real machines landed thousands of kilometers apart, so their true landing sites are written in your Journal." }
   ],
+
   "viking1_intro": [
-    { "speaker": "ziggy", "text": "Look! An old lander with long legs. That's Viking 1, from 1976!" },
-    { "speaker": "pebble", "text": "1976? That's older than my parents!" },
+    { "speaker": "ziggy", "text": "Look! An old lander with long legs. That's Viking 1. It landed in 1976!" },
+    { "speaker": "pebble", "text": "1976? That's ancient!" },
     { "speaker": "ziggy", "text": "It did experiments on Mars soil. Was it growing potatoes or what?" },
-    { "speaker": "ziggy", "text": "Just kidding. It was searching for signs of LIFE. Let's open its file!" }
+    { "speaker": "ziggy", "text": "Okay, okay, no potatoes. It was hunting for signs of LIFE. Let's open its file!" }
   ],
+
   "viking1_outro": [
-    { "speaker": "ziggy", "text": "So the soil did weird things, but that's not proof of life. Careful detectives don't jump to conclusions!" },
+    { "speaker": "ziggy", "text": "So the soil did strange things, but that is NOT proof of life. Good detectives never jump to conclusions!" },
+    { "speaker": "pebble", "text": "And after six years, one wrong command from Earth silenced it. Poor Viking." },
     { "speaker": "ziggy", "text": "Clue #1 saved. Follow the arrow to the next machine!" }
   ],
+
   "opportunity_intro": [
-    { "speaker": "ziggy", "text": "Whoa, a rover with solar wings! Meet Opportunity." },
-    { "speaker": "pebble", "text": "It looks tiny for a planet this big." },
-    { "speaker": "ziggy", "text": "Tiny but tough! It was supposed to work for 90 days... and kept going for almost 15 YEARS." },
-    { "speaker": "ziggy", "text": "It studied rocks. Wait, is that rock older than my grandpa?" }
+    { "speaker": "ziggy", "text": "Whoa, a rover with solar panels! Meet Opportunity." },
+    { "speaker": "pebble", "text": "It looks small for a whole planet." },
+    { "speaker": "ziggy", "text": "Small but tough! It was built to work for about 90 days... and it kept going for almost 15 YEARS." },
+    { "speaker": "ziggy", "text": "It read rocks like a book. Hey, is this rock older than my grandpa?" },
+    { "speaker": "pebble", "text": "Ziggy, that rock was old before your grandpa was even born!" }
   ],
+
   "opportunity_outro": [
-    { "speaker": "ziggy", "text": "Rocks that formed in water! So Mars had water a long, long time ago." },
-    { "speaker": "ziggy", "text": "Clue saved. One more machine is waiting for us!" }
+    { "speaker": "ziggy", "text": "Rocks soaked by water, and little blueberries made inside them! Mars had liquid water a very long time ago." },
+    { "speaker": "pebble", "text": "Then a giant dust storm hid the Sun from its solar panels." },
+    { "speaker": "ziggy", "text": "Clue #2 saved. One more machine is waiting for us!" }
   ],
+
   "phoenix_intro": [
-    { "speaker": "ziggy", "text": "Brrr! It's cold up here near the north pole. That's the Phoenix lander!" },
-    { "speaker": "ziggy", "text": "Phoenix had a robot arm made for digging. Like a sandcastle champion, but on Mars." },
+    { "speaker": "ziggy", "text": "Brrr! It's chilly up here in the far north. That's the Phoenix lander!" },
+    { "speaker": "ziggy", "text": "Phoenix had a robot arm built for digging. Like a treasure hunter with a shovel, but on Mars." },
     { "speaker": "pebble", "text": "What was it digging for?" },
     { "speaker": "ziggy", "text": "Something hiding just under the dust. Let's find out!" }
   ],
+
   "phoenix_outro": [
-    { "speaker": "ziggy", "text": "Wait... so there's water here, but it's pretending to be ice?! Sneaky!" },
-    { "speaker": "ziggy", "text": "Clue saved!" }
+    { "speaker": "ziggy", "text": "Wait... so there’s water here, but it’s hiding as ice?! Sneaky!" },
+    { "speaker": "pebble", "text": "Summer ended, the Sun sank low, and Phoenix ran out of power." },
+    { "speaker": "ziggy", "text": "Clue #3 saved!" }
   ],
+
   "case_ready": [
     { "speaker": "ziggy", "text": "Captain! We have ALL 3 Evidence Cards!" },
     { "speaker": "ziggy", "text": "Time to put them on the case board and solve Case #001. Detective mode: ON!" }

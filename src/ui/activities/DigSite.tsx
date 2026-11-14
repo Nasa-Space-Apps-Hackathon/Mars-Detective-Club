@@ -93,7 +93,7 @@ export default function DigSite({ onSuccess }: ActivityProps) {
             </p>
             {(stage === "waiting" || stage === "revealed") && (
               <div className="mt-3">
-                <p className="font-display">📅 Sol {sol} / 4</p>
+                <p className="font-display">📅 Day {sol} / 4</p>
                 <div className="h-3 bg-white/10 rounded-full mt-1 overflow-hidden">
                   <motion.div className="h-full bg-glow" animate={{ width: `${(sol / 4) * 100}%` }} />
                 </div>
@@ -108,7 +108,7 @@ export default function DigSite({ onSuccess }: ActivityProps) {
           {stage === "revealed" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
               <p className="bg-glow/15 border-2 border-glow rounded-2xl p-3 text-[16px]">
-                🧊 → 💨 Salt would have stayed. The white chunks <b>sublimated</b>: ice turned straight into vapor. Phoenix found <b>water ice</b>!
+              🧊 → 💨 Salt would have stayed. The white chunks <b>turned straight into vapor</b>. Phoenix found <b>water ice</b>!
               </p>
               <Button variant="glow" onClick={onSuccess} autoFocus>
                 Collect the Evidence ✨
