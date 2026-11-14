@@ -6,6 +6,9 @@ import * as THREE from "three";
 import { useGame } from "@/store/useGame";
 import { ZONES } from "./zones";
 import type { RuntimeRef } from "./runtime";
+import { SALVAGE } from "./salvageData";
+import { getHeight } from "./terrainData";
+import { useInteraction } from "@/lib/interaction";
 
 const suit = "#f2ede1";
 const orange = "#ef874c";
@@ -15,6 +18,7 @@ const joints = "#424e59";
 export default function Character({ runtime }: { runtime: RuntimeRef }) {
   const root = useRef<THREE.Group>(null);
   const torso = useRef<THREE.Group>(null);
+  const helmet = useRef<THREE.Group>(null);
   const hips = useRef<THREE.Group>(null);
   const leftLeg = useRef<THREE.Group>(null);
   const rightLeg = useRef<THREE.Group>(null);
@@ -30,7 +34,7 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
   const ziggy = useRef<THREE.Group>(null);
   const propeller = useRef<THREE.Group>(null);
   const thruster = useRef<THREE.Mesh>(null);
-  const animation = useRef({ stride: 0, gait: 0, run: 0, air: 0, scan: 0, lean: 0, tumble: 0 });
+  const animation = useRef({ stride: 0, gait: 0, run: 0, air: 0, scan: 0, lean: 0, tumble: 0, pickup: 0, reach: 0, terminal: 0 });
   const temp = useMemo(() => new THREE.Vector3(), []);
   const beamDirection = useMemo(() => new THREE.Vector3(), []);
   const beamUp = useMemo(() => new THREE.Vector3(0, 1, 0), []);
@@ -42,6 +46,14 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
     const frozen = active.paused || active.journalOpen || active.showControls;
     const dt = frozen ? 0 : Math.min(delta, 0.05);
     const t = s.simTime;
+    const hold = useInteraction.getState();
+    const collecting = s.grounded && hold.holding && hold.target?.startsWith("salvage:");
+    const operatingShip = s.grounded && (hold.holding && hold.target === "ship" || active.phase === "shop");
+    a.terminal = THREE.MathUtils.damp(a.terminal, operatingShip ? 1 : 0, 9, dt);
+    a.pickup = THREE.MathUtils.damp(a.pickup, collecting ? 1 : 0, collecting ? 9 : 6, dt);
+    a.reach = THREE.MathUtils.damp(a.reach, collecting ? THREE.MathUtils.smoothstep(hold.progress, 0.15, 0.78) : 0, 12, dt);
+    const inspecting = active.phase === "explore" && s.grounded && !active.nearArtifact && !active.nearShip
+      ? SALVAGE.find((piece) => piece.id === active.nearSalvage) : null;
     const scanTarget = s.scanning > 0 ? Math.sin(Math.min(s.scanning * 1.4, 1) * Math.PI * 0.5) : 0;
     a.scan = THREE.MathUtils.damp(a.scan, scanTarget, 13, dt);
     a.gait = THREE.MathUtils.damp(a.gait, s.grounded ? Math.min(s.speed / 6.5, 1) : 0, 12, dt);
@@ -61,33 +73,43 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
       root.current.rotation.y = s.heading;
     }
     if (hips.current) {
-      hips.current.position.y = 0.82 - squish * 0.16 + Math.abs(step) * a.gait * 0.025;
+      hips.current.position.y = 0.82 - squish * 0.16 + Math.abs(step) * a.gait * 0.025 - a.pickup * 0.22;
       hips.current.rotation.z = step * a.gait * 0.025;
     }
     if (torso.current) {
-      torso.current.rotation.x = a.lean + squish * 0.2 - (falling ? 0.12 : 0);
+      torso.current.rotation.x = a.lean + squish * 0.2 - (falling ? 0.12 : 0) + a.pickup * 0.86 + a.terminal * 0.12;
       torso.current.rotation.y = THREE.MathUtils.damp(torso.current.rotation.y, step * a.gait * (0.055 + a.run * 0.035), 12, dt);
       torso.current.rotation.z = Math.sin(t * 4) * a.tumble;
     }
-    const upperLeft = step * 0.48 * a.gait + (rising ? -0.45 : falling ? 0.2 : 0) - squish * 0.35;
-    const upperRight = -step * 0.48 * a.gait + (rising ? -0.2 : falling ? -0.13 : 0) - squish * 0.35;
+    if (helmet.current) {
+      const dx = inspecting ? inspecting.x - s.position.x : 0;
+      const dz = inspecting ? inspecting.z - s.position.z : 0;
+      const turn = inspecting ? Math.atan2(Math.sin(Math.atan2(dx, dz) - s.heading), Math.cos(Math.atan2(dx, dz) - s.heading)) : 0;
+      const pitch = inspecting ? Math.min(0.92, Math.atan2(s.position.y + 1.8 - getHeight(inspecting.x, inspecting.z) - 0.25, Math.max(0.2, Math.hypot(dx, dz)))) : 0;
+      helmet.current.rotation.y = THREE.MathUtils.damp(helmet.current.rotation.y, THREE.MathUtils.clamp(turn, -1.1, 1.1) * (1 - a.pickup), 9, dt);
+      helmet.current.rotation.x = THREE.MathUtils.damp(helmet.current.rotation.x, pitch * (1 - a.pickup * 0.75) + a.terminal * 0.2, 9, dt);
+    }
+    const upperLeft = step * 0.48 * a.gait + (rising ? -0.45 : falling ? 0.2 : 0) - squish * 0.35 - a.pickup * 0.7;
+    const upperRight = -step * 0.48 * a.gait + (rising ? -0.2 : falling ? -0.13 : 0) - squish * 0.35 - a.pickup * 0.55;
     if (leftLeg.current) leftLeg.current.rotation.x = THREE.MathUtils.damp(leftLeg.current.rotation.x, upperLeft, 14, dt);
     if (rightLeg.current) rightLeg.current.rotation.x = THREE.MathUtils.damp(rightLeg.current.rotation.x, upperRight, 14, dt);
-    if (leftKnee.current) leftKnee.current.rotation.x = THREE.MathUtils.damp(leftKnee.current.rotation.x, Math.max(0, -step) * a.gait * 0.6 + airborne * 0.4 + squish * 0.65, 14, dt);
-    if (rightKnee.current) rightKnee.current.rotation.x = THREE.MathUtils.damp(rightKnee.current.rotation.x, Math.max(0, step) * a.gait * 0.6 + airborne * 0.3 + squish * 0.65, 14, dt);
+    if (leftKnee.current) leftKnee.current.rotation.x = THREE.MathUtils.damp(leftKnee.current.rotation.x, Math.max(0, -step) * a.gait * 0.6 + airborne * 0.4 + squish * 0.65 + a.pickup * 1.08, 14, dt);
+    if (rightKnee.current) rightKnee.current.rotation.x = THREE.MathUtils.damp(rightKnee.current.rotation.x, Math.max(0, step) * a.gait * 0.6 + airborne * 0.3 + squish * 0.65 + a.pickup * 0.94, 14, dt);
     const armSwing = a.gait * (0.68 + a.run * 0.2);
     const jumpArm = rising ? -0.7 : falling ? -0.35 : -0.55;
     const armSpread = 0.18 + a.gait * 0.04 + a.air * (falling ? 0.46 : 0.34);
     const elbowBend = 0.2 + a.gait * (0.16 + a.run * 0.52);
     if (leftArm.current) {
-      leftArm.current.rotation.x = THREE.MathUtils.damp(leftArm.current.rotation.x, THREE.MathUtils.lerp(-step * armSwing, jumpArm, a.air) - squish * 0.18, 14, dt);
+      leftArm.current.rotation.x = THREE.MathUtils.damp(leftArm.current.rotation.x, THREE.MathUtils.lerp(-step * armSwing, jumpArm, a.air) - squish * 0.18 - a.pickup * 0.5, 14, dt);
       // Negative roll on the left / positive on the right keeps the hands outside the suit.
       leftArm.current.rotation.z = THREE.MathUtils.damp(leftArm.current.rotation.z, -armSpread, 12, dt);
     }
     if (rightArm.current) {
       const movement = THREE.MathUtils.lerp(step * armSwing, jumpArm, a.air) - squish * 0.18;
-      rightArm.current.rotation.x = THREE.MathUtils.damp(rightArm.current.rotation.x, THREE.MathUtils.lerp(movement, -1.05, a.scan), 14, dt);
-      rightArm.current.rotation.z = THREE.MathUtils.damp(rightArm.current.rotation.z, THREE.MathUtils.lerp(armSpread, 0.18, a.scan), 12, dt);
+      const reaching = THREE.MathUtils.lerp(THREE.MathUtils.lerp(movement, -1.05, a.scan), -1.58, a.reach);
+      const terminalTap = -1.15 + Math.sin(hold.progress * Math.PI * 6) * 0.12;
+      rightArm.current.rotation.x = THREE.MathUtils.damp(rightArm.current.rotation.x, THREE.MathUtils.lerp(reaching, terminalTap, a.terminal), 14, dt);
+      rightArm.current.rotation.z = THREE.MathUtils.damp(rightArm.current.rotation.z, THREE.MathUtils.lerp(THREE.MathUtils.lerp(armSpread, 0.18, a.scan), 0.05, a.reach), 12, dt);
     }
     if (leftElbow.current) {
       const bend = THREE.MathUtils.lerp(elbowBend + Math.max(0, step) * a.gait * 0.14, 0.48, a.air);
@@ -95,7 +117,8 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
     }
     if (rightElbow.current) {
       const bend = THREE.MathUtils.lerp(elbowBend + Math.max(0, -step) * a.gait * 0.14, 0.48, a.air);
-      rightElbow.current.rotation.x = THREE.MathUtils.damp(rightElbow.current.rotation.x, -THREE.MathUtils.lerp(bend, 0.38, a.scan), 14, dt);
+      const pickupBend = THREE.MathUtils.lerp(THREE.MathUtils.lerp(bend, 0.38, a.scan), 0.12, a.reach);
+      rightElbow.current.rotation.x = THREE.MathUtils.damp(rightElbow.current.rotation.x, -THREE.MathUtils.lerp(pickupBend, 0.55, a.terminal), 14, dt);
     }
     if (scanner.current) scanner.current.visible = a.scan > 0.08;
     if (scanBeam.current) {
@@ -158,7 +181,7 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
               </group>
             </group>
           ))}
-          <group ref={torso} position={[0, 0.05, 0]}>
+          <group ref={torso} name="pebble-torso" position={[0, 0.05, 0]}>
             <mesh position={[0, 0.31, 0]} castShadow><capsuleGeometry args={[0.34, 0.36, 4, 12]} /><meshStandardMaterial color={orange} roughness={0.7} /></mesh>
             <mesh position={[0, 0.37, 0.3]} castShadow><boxGeometry args={[0.4, 0.34, 0.14]} /><meshStandardMaterial color={suit} /></mesh>
             <mesh position={[0, 0.39, 0.38]}><boxGeometry args={[0.23, 0.12, 0.02]} /><meshStandardMaterial color="#294552" /></mesh>
@@ -168,13 +191,15 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
               <mesh key={side} position={[side * 0.2, 0.3, -0.51]} castShadow><cylinderGeometry args={[0.085, 0.085, 0.43, 8]} /><meshStandardMaterial color={joints} /></mesh>
             ))}
             <mesh position={[0, 0.79, 0]} castShadow><cylinderGeometry args={[0.22, 0.24, 0.12, 12]} /><meshStandardMaterial color={joints} /></mesh>
-            <mesh position={[0, 1.12, 0]} castShadow><sphereGeometry args={[0.39, 20, 14]} /><meshStandardMaterial color={suit} roughness={0.38} /></mesh>
-            <mesh position={[0, 1.12, 0.205]} scale={[1, 0.82, 0.55]} castShadow><sphereGeometry args={[0.34, 20, 14]} /><meshStandardMaterial color="#143b4e" metalness={0.65} roughness={0.2} /></mesh>
-            <mesh position={[-0.12, 1.22, 0.365]} rotation={[0, 0, -0.2]}><boxGeometry args={[0.09, 0.13, 0.015]} /><meshBasicMaterial color="#b7f2ef" transparent opacity={0.65} /></mesh>
-            <mesh position={[0.26, 1.35, 0.12]}><boxGeometry args={[0.13, 0.1, 0.13]} /><meshStandardMaterial color={joints} /></mesh>
-            <mesh position={[0.26, 1.35, 0.19]}><circleGeometry args={[0.035, 8]} /><meshBasicMaterial color="#fff1b3" /></mesh>
+            <group ref={helmet} name="pebble-helmet" position={[0, 0.92, 0]}>
+              <mesh position={[0, 0.2, 0]} castShadow><sphereGeometry args={[0.39, 20, 14]} /><meshStandardMaterial color={suit} roughness={0.38} /></mesh>
+              <mesh position={[0, 0.2, 0.205]} scale={[1, 0.82, 0.55]} castShadow><sphereGeometry args={[0.34, 20, 14]} /><meshStandardMaterial color="#143b4e" metalness={0.65} roughness={0.2} /></mesh>
+              <mesh position={[-0.12, 0.3, 0.365]} rotation={[0, 0, -0.2]}><boxGeometry args={[0.09, 0.13, 0.015]} /><meshBasicMaterial color="#b7f2ef" transparent opacity={0.65} /></mesh>
+              <mesh position={[0.26, 0.43, 0.12]}><boxGeometry args={[0.13, 0.1, 0.13]} /><meshStandardMaterial color={joints} /></mesh>
+              <mesh position={[0.26, 0.43, 0.19]}><circleGeometry args={[0.035, 8]} /><meshBasicMaterial color="#fff1b3" /></mesh>
+            </group>
             {[-1, 1].map((side) => (
-              <group key={side} ref={side < 0 ? leftArm : rightArm} position={[side * 0.46, 0.6, 0]} rotation={[0, 0, side * 0.18]}>
+              <group key={side} name={side < 0 ? "pebble-left-arm" : "pebble-right-arm"} ref={side < 0 ? leftArm : rightArm} position={[side * 0.46, 0.6, 0]} rotation={[0, 0, side * 0.18]}>
                 <mesh castShadow><sphereGeometry args={[0.16, 10, 8]} /><meshStandardMaterial color={suit} /></mesh>
                 <mesh position={[0, -0.17, 0]} castShadow><capsuleGeometry args={[0.13, 0.16, 3, 8]} /><meshStandardMaterial color={orange} /></mesh>
                 <group ref={side < 0 ? leftElbow : rightElbow} position={[0, -0.34, 0]} rotation={[-0.2, 0, 0]}>

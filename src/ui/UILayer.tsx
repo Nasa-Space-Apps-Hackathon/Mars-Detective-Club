@@ -16,6 +16,8 @@ import CaseBoard from "./CaseBoard";
 import Credits from "./Credits";
 import DevPanel from "./DevPanel";
 import ShipShop from "./ShipShop";
+import { closeGameplayPanel, GameplaySettings, useGameplayPanel } from "./GameplayControls";
+import controlStyles from "./GameplayControls.module.css";
 
 /**
  * Person 4's overlay. Sits on top of the 3D canvas.
@@ -27,24 +29,31 @@ export default function UILayer() {
   const paused = useGame((s) => s.paused);
   const journalOpen = useGame((s) => s.journalOpen);
   const showControls = useGame((s) => s.showControls);
+  const settingsPanel = useGameplayPanel((s) => s.panel);
   const [dev, setDev] = useState(false);
 
   useEffect(() => {
     setDev(new URLSearchParams(window.location.search).has("dev"));
   }, []);
 
+  useEffect(() => {
+    if (phase !== "explore" || !paused) useGameplayPanel.getState().setPanel(null);
+  }, [phase, paused]);
+
   // global keys: Esc = pause / close, J = journal
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
       const s = useGame.getState();
       const inGame = !["menu", "credits"].includes(s.phase);
       if (e.code === "Escape" && inGame) {
-        if (s.phase === "shop") s.closeShop();
+        if (useGameplayPanel.getState().panel) closeGameplayPanel();
+        else if (s.phase === "shop") s.closeShop();
         else if (s.journalOpen) s.toggleJournal(false);
         else if (s.showControls) s.dismissControls();
         else if (s.phase === "explore") s.togglePause();
       }
-      if (e.code === "KeyJ" && s.phase === "explore" && !s.paused) s.toggleJournal();
+      if (e.code === "KeyJ" && !e.repeat && s.phase === "explore" && !s.paused && !s.showControls) s.toggleJournal();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -53,7 +62,7 @@ export default function UILayer() {
   const inPlay = !["menu", "credits", "ending"].includes(phase);
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${controlStyles.theme}`}>
       {inPlay && <HUD />}
 
       <AnimatePresence mode="wait">
@@ -70,8 +79,10 @@ export default function UILayer() {
       <AnimatePresence>
         {phase === "explore" && showControls && <ControlsTutorial key="controls" />}
         {journalOpen && <Journal key="journal" />}
-        {paused && <PauseMenu key="pause" />}
+        {paused && !settingsPanel && <PauseMenu key="pause" />}
       </AnimatePresence>
+
+      {settingsPanel && <GameplaySettings />}
 
       {dev && <DevPanel />}
     </div>

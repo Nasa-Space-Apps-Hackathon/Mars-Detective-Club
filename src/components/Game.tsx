@@ -4,6 +4,7 @@ import MarsWorld from "@/world/MarsWorld";
 import StubArtifacts from "@/artifacts/StubArtifacts";
 import UILayer from "@/ui/UILayer";
 import LoadingScreen from "@/ui/LoadingScreen";
+import Soundtrack from "@/components/Soundtrack";
 import { Component, Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import { useGLTF, useProgress } from "@react-three/drei";
 
@@ -48,6 +49,7 @@ export default function Game() {
 
   return (
     <main className="fixed inset-0 select-none" aria-busy={!landed}>
+      <Soundtrack />
       <div className="absolute inset-0">
         <WorldBoundary onError={markWorldError}>
           <MarsWorld onReady={markWorldReady}>

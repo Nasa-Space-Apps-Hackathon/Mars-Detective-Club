@@ -1,26 +1,29 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useGame } from "@/store/useGame";
 import { getArtifact } from "@/lib/content";
 import { ARTIFACT_ORDER, type ArtifactId } from "@/store/types";
 import { EvidenceCard } from "./EvidenceUnlock";
 import { Button, Overlay, popIn } from "./primitives";
+import { useDialogFocus } from "./useDialogFocus";
 
 export default function Journal() {
   const evidence = useGame((s) => s.evidence);
   const toggleJournal = useGame((s) => s.toggleJournal);
   const [open, setOpen] = useState<ArtifactId | null>(evidence[evidence.length - 1] ?? null);
   const a = open ? getArtifact(open) : null;
+  const dialog = useRef<HTMLDivElement>(null);
+  useDialogFocus(dialog);
 
   return (
     <Overlay>
-      <motion.div {...popIn} className="glass rounded-3xl p-6 md:p-8 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+      <motion.div ref={dialog} {...popIn} role="dialog" aria-modal="true" aria-labelledby="journal-heading" className="glass rounded-3xl p-6 md:p-8 w-full max-w-5xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <div>
             <p className="text-sm font-display uppercase tracking-widest text-glow">Detective Journal</p>
-            <h2 className="font-display text-3xl font-bold">Case #001: Did Mars ever have water?</h2>
+            <h2 id="journal-heading" className="font-display text-3xl font-bold">Case #001: Did Mars ever have water?</h2>
           </div>
           <Button variant="ghost" onClick={() => toggleJournal(false)} aria-label="Close journal">
             ✕
@@ -63,7 +66,7 @@ export default function Journal() {
             </div>
           </motion.div>
         )}
-        {evidence.length === 0 && <p className="text-center text-white/60 mt-6">Find a NASA machine and press E to scan it. Its clue will appear here.</p>}
+        {evidence.length === 0 && <p className="text-center text-white/60 mt-6">Find a NASA machine and hold E to scan it. Its clue will appear here.</p>}
       </motion.div>
     </Overlay>
   );

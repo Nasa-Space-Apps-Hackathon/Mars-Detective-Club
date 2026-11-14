@@ -15,7 +15,7 @@ import { playerState, teleport as legacyTeleport } from "./playerState";
 import { JUMP_SPEED, MARS_GRAVITY as GRAVITY } from "./physics";
 import { SALVAGE, SALVAGE_RADIUS } from "./salvageData";
 import { SHIP_TERMINAL } from "./landingPod";
-import { interactNearby } from "@/lib/supplies";
+import { advanceInteraction, beginInteraction, cancelInteraction, endInteraction, nearbyInteraction, useInteraction } from "@/lib/interaction";
 
 const FRICTION = 14;
 const CAPSULE_CENTER = 1.17;
@@ -43,6 +43,7 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
     const clear = () => {
       keys.current = {};
       input.current.jumpBuffer = 0;
+      cancelInteraction(true);
     };
     const down = (event: KeyboardEvent) => {
       if (event.defaultPrevented) return;
@@ -54,12 +55,13 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       if (event.code === "KeyE" && !event.repeat && canMove()) {
         if (runtime.current.grounded) {
           useGame.getState().setPlayer([runtime.current.position.x, runtime.current.position.z], runtime.current.orbitYaw);
-          interactNearby();
+          beginInteraction("keyboard");
         }
       }
     };
     const up = (event: KeyboardEvent) => {
       keys.current[event.code] = false;
+      if (event.code === "KeyE") endInteraction("keyboard");
     };
     const teleport = (event: Event) => {
       const detail = (event as CustomEvent<{ x: number; z: number; y?: number }>).detail;
@@ -105,6 +107,8 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
     window.addEventListener("blur", clear);
+    const visibility = () => { if (document.hidden) clear(); };
+    document.addEventListener("visibilitychange", visibility);
     const dev = new URLSearchParams(window.location.search).has("dev");
     if (dev) window.addEventListener("mars:teleport", teleport);
     return () => {
@@ -112,6 +116,8 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
       window.removeEventListener("blur", clear);
+      document.removeEventListener("visibilitychange", visibility);
+      cancelInteraction(true);
       if (dev) window.removeEventListener("mars:teleport", teleport);
     };
   }, [runtime]);
@@ -150,7 +156,10 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
     const forward = Number(Boolean(keys.current.KeyW || keys.current.ArrowUp)) - Number(Boolean(keys.current.KeyS || keys.current.ArrowDown));
     const sideways = Number(Boolean(keys.current.KeyD || keys.current.ArrowRight)) - Number(Boolean(keys.current.KeyA || keys.current.ArrowLeft));
     const length = Math.hypot(forward, sideways) || 1;
-    const walkSpeed = keys.current.ShiftLeft || keys.current.ShiftRight ? 11 : 6.5;
+    // Settle in place during a pickup, while allowing an intentional move/jump to cancel it.
+    if (forward || sideways || controls.jumpBuffer > 0) cancelInteraction();
+    const holding = useInteraction.getState().holding;
+    const walkSpeed = holding ? 0 : keys.current.ShiftLeft || keys.current.ShiftRight ? 11 : 6.5;
     const desiredX = (Math.sin(s.orbitYaw) * forward - Math.cos(s.orbitYaw) * sideways) / length * walkSpeed;
     const desiredZ = (Math.cos(s.orbitYaw) * forward + Math.sin(s.orbitYaw) * sideways) / length * walkSpeed;
     const hasInput = Boolean(forward || sideways);
@@ -246,6 +255,13 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       const difference = Math.atan2(Math.sin(heading - s.heading), Math.cos(heading - s.heading));
       s.heading += difference * (1 - Math.exp(-12 * dt));
     }
+    if (useInteraction.getState().holding) {
+      const target = nearbyInteraction();
+      if (target && Math.hypot(target.x - s.position.x, target.z - s.position.z) > 0.1) {
+        const heading = Math.atan2(target.x - s.position.x, target.z - s.position.z);
+        s.heading += Math.atan2(Math.sin(heading - s.heading), Math.cos(heading - s.heading)) * (1 - Math.exp(-14 * dt));
+      }
+    }
     Object.assign(playerState, { x: s.position.x, y: s.position.y, z: s.position.z, yaw: s.heading, speed: s.speed, grounded: s.grounded });
     let near: ArtifactId | null = null;
     if (s.grounded) {
@@ -259,6 +275,7 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       .map((piece) => ({ id: piece.id, distance: Math.hypot(s.position.x - piece.x, s.position.z - piece.z) }))
       .filter((piece) => piece.distance < SALVAGE_RADIUS).sort((a, b) => a.distance - b.distance)[0] : null;
     game.setNearSupplies(nearest?.id ?? null, s.grounded && Math.hypot(s.position.x - SHIP_TERMINAL.x, s.position.z - SHIP_TERMINAL.z) < SHIP_TERMINAL.radius);
+    advanceInteraction(dt);
     controls.lastPublish += dt;
     if (controls.lastPublish > 0.1) {
       controls.lastPublish = 0;

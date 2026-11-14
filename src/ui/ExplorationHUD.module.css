@@ -51,7 +51,7 @@
   .actions { top: 16px; right: 16px; gap: 4px; }
   .action { padding: 8px; }
   .controls { bottom: 16px; left: 16px; gap: 8px; max-width: calc(100vw - 224px); padding: 8px 12px; }
-  .controls span:nth-child(n+4) { display: none; }
+  .controls span:nth-of-type(n+4) { display: none; }
   .compass { bottom: 16px; right: 16px; padding: 8px 12px; gap: 8px; }
   .scan { bottom: 112px; }
   .weather { left: 16px; bottom: 112px; max-width: 240px; }
@@ -62,7 +62,7 @@
   .mission p { font-size: .75rem; }
   .actions { left: 16px; right: auto; }
   .controls { bottom: 16px; max-width: 128px; gap: 4px; font-size: .75rem; }
-  .controls span:nth-child(n+3) { display: none; }
+  .controls span:nth-of-type(n+3) { display: none; }
   .compass { max-width: 180px; }
   .destination strong { font-size: .75rem; }
   .scan { bottom: 112px; width: calc(100vw - 32px); }
@@ -81,3 +81,47 @@
   .controls { max-width: 104px; }
   .compass { max-width: 160px; }
 }
+
+/* The supplied terracotta sheet establishes the gameplay frame and controls. */
+.mission { isolation: isolate; width: 440px; max-width: calc(100vw - 400px); min-height: 108px; padding: 24px 32px; top: 12px; left: 16px; background: transparent; box-shadow: none; color: #69361f; }
+.mission h1 { font-size: 1.25rem; line-height: 1.4; }
+.mission p { color: #803a20; font-weight: 700; line-height: 1.4; }
+.compass { isolation: isolate; min-height: 80px; padding: 16px 24px; background: transparent; box-shadow: none; color: #69361f; }
+.destination span { color: #803a20; font-weight: 700; }
+.controls { isolation: isolate; min-height: 64px; padding: 16px 24px; background: transparent; color: #69361f; box-shadow: none; pointer-events: auto; gap: 12px; font-weight: 700; }
+.controls span { display: inline-flex; align-items: center; gap: 4px; }
+.controls kbd, .scanButton kbd, .tutorial kbd { color: #6e381e; background: #fff3e3; border-bottom-color: #bd805b; }
+.helpButton { width: 32px; height: 32px; display: grid; place-items: center; border: 2px solid #d38b5d; border-radius: 8px; background: #a8441c; color: #fff1dd; font: 500 1rem/1 var(--font-display); cursor: pointer; }
+.helpButton:hover { background: #c85b2d; }
+.scanButton { background: #ffdfb8; color: #63361d; border: 3px solid #fff1dc; box-shadow: 0 4px 0 #984922, 0 8px 24px #52240e44; }
+.scanButton:hover { background: #fff0d8; }
+.weather { background: #7e351d; border: 2px solid #e6a475; color: #ffe7c6; }
+.tutorial { color: #61371f; background: #f1cbae; border: 4px solid #fff1dc; outline: 4px solid #9b4a29; box-shadow: inset 0 0 0 4px #d89c78, 0 12px 0 #783619, 0 24px 48px #321a1066; }
+.tutorial p, .tutorial li > span:last-child { color: #75462c; }
+.weatherNote { background: #e2b18c; }
+.weatherNote strong { color: #793e1e; }
+.tutorialFooter button { background: #a8441c; color: #fff1dd; border-color: #743013; }
+.tutorialFooter button:hover { background: #bc5427; }
+@media (max-width: 1000px) and (min-width: 541px) { .mission { width: 360px; min-height: 100px; padding: 24px; max-width: calc(100vw - 364px); } .mission h1 { font-size: 1rem; } .mission p { font-size: .75rem; } }
+@media (max-width: 800px) { .controls { padding: 12px 16px; gap: 8px; } .compass { min-height: 72px; padding: 12px 16px; } }
+@media (max-width: 540px) { .mission { top: 76px; width: calc(100vw - 32px); max-width: none; min-height: 96px; padding: 24px; } .mission h1 { font-size: 1rem; } .mission p { font-size: .75rem; } .controls { min-height: 72px; max-width: calc(100vw - 212px); gap: 4px 8px; padding: 12px; } .controls span:nth-of-type(n+2) { display: none; } .compass { max-width: 180px; } .weather { bottom: 208px; } }
+
+.mission { display: flex; flex-direction: column; justify-content: center; text-align: center; padding-inline: 40px; max-width: calc(100vw - 368px); }
+.mission h1, .mission p { text-wrap: balance; }
+.scan { width: min(420px, calc(100vw - 32px)); }
+.scanButton { width: 100%; }
+.scanText, .destination { min-width: 0; }
+.scanButton kbd { flex-shrink: 0; }
+.guide { position: absolute; bottom: 112px; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); padding: 12px 16px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 12px; border: 2px solid #fff1dc; border-radius: 12px; background: #ffdfb8; color: #69361f; font-size: .875rem; pointer-events: auto; }
+.guide button { min-height: 32px; padding: 4px 8px; border-radius: 8px; background: #a8441c; color: #fff1dd; cursor: pointer; }
+.guide button:last-child { width: 32px; padding: 4px; }
+@media (max-width: 1000px) { .weather { max-width: 240px; bottom: 232px; } }
+@media (max-width: 540px) {
+  .mission { max-width: none; padding: 20px 36px; }
+  .scanText small { display: none; }
+  .compass { max-width: 208px; gap: 8px; padding: 12px 20px; }
+  .weather { bottom: 224px; max-width: calc(100vw - 32px); }
+  .tutorial { padding: 24px 16px; }
+}
+@media (max-height: 600px) and (min-width: 541px) { .mission { min-height: 80px; padding-block: 12px; } .weather { display: none; } .scan, .guide { bottom: 104px; } }
+@media (max-height: 650px) and (max-width: 540px) { .weather { display: none; } }

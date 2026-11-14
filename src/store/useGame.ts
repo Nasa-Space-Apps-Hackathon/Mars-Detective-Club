@@ -125,7 +125,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (!s.toolbox) {
         set({ repairMission: true, fieldMessage: `This simulation station needs a toolbox. Collect ${TOOLBOX_COST} glowing scrap pieces, then trade at your ship.` });
       } else {
-        set({ repaired: [...s.repaired, id], fieldMessage: "Station repaired. Press E again to scan. Your toolbox is reusable." });
+        set({ repaired: [...s.repaired, id], fieldMessage: "Station repaired. Release, then hold E again to scan. Your toolbox is reusable." });
       }
       return;
     }
@@ -202,7 +202,7 @@ export const useGame = create<GameState>((set, get) => ({
     if (!canMove() || !piece || s.collectedSalvage.includes(id) || Math.hypot(piece.x - s.playerPos[0], piece.z - s.playerPos[1]) > SALVAGE_RADIUS + 0.5) return;
     set({ collectedSalvage: [...s.collectedSalvage, id], salvage: s.salvage + 1, nearSalvage: null,
       repairMission: s.repairMission || s.salvage + 1 >= TOOLBOX_COST,
-      fieldMessage: s.salvage + 1 >= TOOLBOX_COST && !s.toolbox ? "Enough scrap. Follow the compass back to the ship for your toolbox." : "Scrap collected. Your ship can recycle it into supplies." });
+      fieldMessage: s.salvage + 1 >= TOOLBOX_COST && !s.toolbox ? "Toolbox ready to trade at the ship." : "+1 scrap" });
   },
   openShop: () => {
     const s = get();

@@ -27,11 +27,10 @@ export default function ShipShop() {
       if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     }}>
       <div className={styles.shopHeader}><h2 id="depot-title">Ship supply depot</h2><button className={styles.close} onClick={close} aria-label="Close supply depot">×</button></div>
-      <p>Your ship recycles field scrap into expedition tools.</p>
       <div className={styles.inventory}><span>Recyclable scrap</span><strong>{salvage} <small>pieces</small></strong></div>
-      <div className={styles.tool}><svg viewBox="0 0 80 64" aria-hidden="true"><path d="M27 20V9h26v11M8 22h64v34H8Zm0 13h64M35 29h10v14H35Z" /></svg><div><h3>Repair toolbox</h3><p>Repair both offline simulation stations. Keep it for the whole expedition.</p></div></div>
+      <div className={styles.tool}><svg viewBox="0 0 80 64" aria-hidden="true"><path d="M27 20V9h26v11M8 22h64v34H8Zm0 13h64M35 29h10v14H35Z" /></svg><div><h3>Repair toolbox</h3><p>Reusable at Opportunity and Phoenix.</p></div></div>
       <p className={styles.price}>Trade {TOOLBOX_COST} scrap pieces · Reusable</p>
-      <p className={styles.shopStatus} role="status">{toolbox ? "Toolbox packed. Opportunity and Phoenix can now be repaired with E." : remaining > 0 ? `Collect ${remaining} more glowing scrap ${remaining === 1 ? "piece" : "pieces"}. The compass will help you find them.` : "You have enough scrap for the toolbox."}</p>
+      <p className={styles.shopStatus} role="status">{toolbox ? "Toolbox packed. Hold E at a station to repair it." : remaining > 0 ? `Collect ${remaining} more scrap ${remaining === 1 ? "piece" : "pieces"}.` : "Ready to trade."}</p>
       <button className={styles.trade} disabled={toolbox || remaining > 0} onClick={buy}>{toolbox ? "Toolbox in your pack" : `Trade ${TOOLBOX_COST} scrap for toolbox`}</button>
       <button className={styles.back} onClick={close}>Back to exploring <kbd>Esc</kbd></button>
       <p className={styles.note}>Repairs are part of this virtual game. The real NASA missions remain retired.</p>

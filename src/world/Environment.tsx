@@ -7,6 +7,7 @@ import type { RuntimeRef } from "./runtime";
 import { groundHeight } from "./worldConfig";
 import { getStormCenter, STORMS, type DustDevil } from "./weather";
 import { SKY_HORIZON } from "./Sky";
+import { sampleDayCycle } from "./dayCycle";
 
 const noise = `
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -55,7 +56,10 @@ export function CloudLayers({ runtime }: { runtime: RuntimeRef }) {
     cloudMaterials.forEach((material) => material.dispose());
   }, [cloudMaterials]);
   useFrame(() => {
-    for (const material of cloudMaterials) material.uniforms.uTime.value = runtime.current.simTime;
+    for (const [index, material] of cloudMaterials.entries()) {
+      material.uniforms.uTime.value = runtime.current.simTime;
+      material.uniforms.uOpacity.value = (0.62 - index * 0.08) * (0.18 + sampleDayCycle(runtime.current.simTime).light * 0.82);
+    }
     if (layers.current) layers.current.position.set(runtime.current.position.x * 0.65, 0, runtime.current.position.z * 0.65);
   });
   return (
@@ -81,6 +85,7 @@ function makeSeeds(count: number, seedValue: number) {
 
 function DustDevilVisual({ storm, runtime }: { storm: DustDevil; runtime: RuntimeRef }) {
   const group = useRef<THREE.Group>(null);
+  const dayFog = useMemo(() => new THREE.Color(SKY_HORIZON), []);
   const geometry = useMemo(() => makeSeeds(1900, Math.floor(storm.phase * 1000) + 17), [storm.phase]);
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
@@ -138,6 +143,7 @@ function DustDevilVisual({ storm, runtime }: { storm: DustDevil; runtime: Runtim
     const center = getStormCenter(storm, time);
     if (group.current) group.current.position.set(center.x, groundHeight(center.x, center.z), center.z);
     material.uniforms.uTime.value = time;
+    material.uniforms.uFog.value.set("#4b344b").lerp(dayFog, sampleDayCycle(time).light);
     baseMaterial.uniforms.uTime.value = time;
   });
   const initial = getStormCenter(storm, 0);
