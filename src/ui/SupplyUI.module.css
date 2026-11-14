@@ -89,3 +89,8 @@
   .pack strong { display: inline; margin: 0; }
   .message { top: 104px; left: 16px; width: min(248px, calc(100vw - 32px)); padding: 8px 12px; }
 }
+
+@media (max-height: 600px) and (min-width: 541px) and (max-width: 800px), (max-height: 600px) and (min-width: 541px) and (any-pointer: coarse) {
+  .missions { left: max(160px, calc(env(safe-area-inset-left) + 144px)); width: min(248px, calc(100vw - 400px)); }
+  .pack { flex-wrap: wrap; gap: 4px 12px; }
+}

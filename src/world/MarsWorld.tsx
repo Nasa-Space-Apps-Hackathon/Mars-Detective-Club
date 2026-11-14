@@ -79,7 +79,7 @@ function WorldReady({ onReady }: { onReady?: () => void }) {
 export default function MarsWorld({ children, onReady }: { children?: ReactNode; onReady?: () => void }) {
   const runtime = useRef(createWorldRuntime());
   return (
-    <Canvas shadows camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 60] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}>
+    <Canvas shadows="percentage" camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 60] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}>
       <fog attach="fog" args={[SKY_HORIZON, 45, 230]} />
       <SunLight runtime={runtime} />
       <Sky runtime={runtime} />

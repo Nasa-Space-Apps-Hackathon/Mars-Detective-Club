@@ -1,0 +1,76 @@
+.joystick, .jump {
+  color: #63361d;
+  background: #ffdfb8;
+  border: 2px solid #fff1dc;
+  opacity: .6;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  transition: opacity 200ms cubic-bezier(.22, 1, .36, 1);
+}
+.joystick[data-active="true"], .jump[data-active="true"], .jump:focus-visible { opacity: .9; }
+.joystick {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: max(16px, env(safe-area-inset-left));
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+}
+.joystick kbd {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: 600 .875rem/1.25rem var(--font-display);
+  border-radius: 8px;
+}
+.joystick kbd[data-active="true"] { color: #fff1dc; background: #a8441c; }
+.KeyW { top: 4px; left: calc(50% - 12px); }
+.KeyA { top: calc(50% - 12px); left: 4px; }
+.KeyS { bottom: 4px; left: calc(50% - 12px); }
+.KeyD { top: calc(50% - 12px); right: 4px; }
+.thumb {
+  position: absolute;
+  top: calc(50% - 20px);
+  left: calc(50% - 20px);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #a8441c;
+  border: 2px solid #f1b47e;
+  transform: translate(var(--stick-x, 0px), var(--stick-y, 0px));
+  pointer-events: none;
+}
+.navigation {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  right: max(16px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 16px;
+}
+.jump {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 8px;
+  border-radius: 50%;
+  font: 600 .75rem/1rem var(--font-display);
+  cursor: pointer;
+}
+.jump svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jump:focus-visible { outline: 3px solid #63361d; outline-offset: 4px; }
+@media (hover: hover) { .jump:hover { opacity: .9; } }
+@media (prefers-reduced-motion: reduce) { .joystick, .jump { transition: none; } }

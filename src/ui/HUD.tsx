@@ -7,6 +7,7 @@ import { getArtifact } from "@/lib/content";
 import { expeditionDestination, getObjective } from "@/lib/objectives";
 import HoldInteractionButton from "./HoldInteractionButton";
 import ControlsHint from "./ControlsHint";
+import TouchControls from "./TouchControls";
 import ActiveMissions from "./ActiveMissions";
 import supplyStyles from "./SupplyUI.module.css";
 import WorldStatus, { useWorldStatus } from "./WorldStatus";
@@ -73,7 +74,7 @@ export default function HUD() {
       </div>
       <GameplayControls interactive={interactive} />
       <ControlsHint interactive={interactive} hasPrompt={Boolean(near || nearShip || nearSalvage)} />
-      {interactive && <><Compass /><WorldStatus /><ActiveMissions />{fieldMessage && <p className={supplyStyles.message} role="status">{fieldMessage}</p>}</>}
+      {interactive && <><TouchControls><Compass /></TouchControls><WorldStatus /><ActiveMissions />{fieldMessage && <p className={`${supplyStyles.message} ${styles.fieldMessage}`} role="status">{fieldMessage}</p>}</>}
       <AnimatePresence>
         {interactive && (near || nearShip || nearSalvage) && (
           <div className={styles.scan} key={near ?? (nearShip ? "ship" : nearSalvage)}>

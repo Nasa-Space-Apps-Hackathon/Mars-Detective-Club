@@ -125,3 +125,19 @@
 }
 @media (max-height: 600px) and (min-width: 541px) { .mission { min-height: 80px; padding-block: 12px; } .weather { display: none; } .scan, .guide { bottom: 104px; } }
 @media (max-height: 650px) and (max-width: 540px) { .weather { display: none; } }
+
+/* Leave room for the touch controls, including phones held in landscape. */
+@media (max-width: 800px), (any-pointer: coarse) {
+  .compass { position: relative; bottom: auto; right: auto; min-height: 72px; max-width: min(208px, calc(100vw - 176px)); padding: 12px 16px; }
+  .destination strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; line-height: 1rem; }
+  .destination span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1rem; }
+  .scan, .guide { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 176px); }
+  .weather { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 264px); }
+}
+@media (max-height: 650px) and (max-width: 800px), (max-height: 650px) and (any-pointer: coarse) {
+  .hud:has(.scan) .fieldMessage { display: none; }
+}
+@media (max-height: 600px) and (min-width: 541px) and (max-width: 800px), (max-height: 600px) and (min-width: 541px) and (any-pointer: coarse) {
+  .scan, .guide { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 96px); width: min(420px, calc(100vw - 320px)); }
+  .scanText small { display: none; }
+}
