@@ -26,7 +26,7 @@ export default function Journal() {
             <h2 id="journal-heading" className="font-display text-3xl font-bold">Case #001: Did Mars ever have water?</h2>
           </div>
           <Button variant="ghost" onClick={() => toggleJournal(false)} aria-label="Close journal">
-            ✕
+            ×
           </Button>
         </div>
 
@@ -53,15 +53,15 @@ export default function Journal() {
               <p className="text-glow font-display font-bold">{a.name}</p>
               <p className="text-white/70 text-sm">
                 Landed {a.landed}
-                <br />📍 {a.realLocation}
+                <br />{a.realLocation}
               </p>
             </div>
             <div>
-              <p className="font-bold">💡 Discovery</p>
+              <p className="font-bold">Discovery</p>
               <p className="text-white/85">{a.discovery}</p>
             </div>
             <div>
-              <p className="font-bold">🌙 Why it stopped</p>
+              <p className="font-bold">Why it stopped</p>
               <p className="text-white/85">{a.whyStopped}</p>
             </div>
           </motion.div>

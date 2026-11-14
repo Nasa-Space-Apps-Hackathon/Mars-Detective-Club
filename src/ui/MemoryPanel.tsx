@@ -7,12 +7,9 @@ import { getArtifact } from "@/lib/content";
 import { sfx } from "@/lib/sfx";
 import { Button, MachineIcon, Overlay, popIn } from "./primitives";
 
-function Row({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex gap-3">
-      <span className="text-2xl leading-none mt-0.5" aria-hidden>
-        {icon}
-      </span>
+    <div className="border-l-4 border-rust/40 pl-3">
       <div>
         <p className="font-display font-bold text-rust text-base uppercase tracking-wide">{label}</p>
         <p className="text-[17px] leading-snug">{children}</p>
@@ -51,7 +48,7 @@ export default function MemoryPanel() {
       <motion.div {...popIn} className="relative w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* folder tab */}
         <div className="paper rounded-t-2xl self-start px-6 py-2 font-display font-bold text-rust-dark ml-6 -mb-1">
-          📁 CASE FILE · {a.shortName.toUpperCase()}
+          CASE FILE · {a.shortName.toUpperCase()}
         </div>
         <div className="paper rounded-3xl p-6 md:p-8 overflow-y-auto relative">
           <div className="absolute top-5 right-6 rotate-[-8deg] border-4 border-rust text-rust font-display font-bold px-3 py-1 rounded-lg opacity-80 text-sm">
@@ -88,15 +85,15 @@ export default function MemoryPanel() {
                 <p className="text-sm font-bold opacity-60">{a.mission}</p>
                 <h2 className="font-display text-3xl md:text-4xl font-bold text-night">{a.name}</h2>
                 <p className="text-sm mt-1">
-                  📍 <b>Real location:</b> {a.realLocation}
+                  <b>Real location:</b> {a.realLocation}
                 </p>
               </div>
-              <Row icon="🎯" label="Why NASA sent it">{a.purpose}</Row>
-              <Row icon="⚙️" label="How it worked">{a.howItWorked}</Row>
-              <Row icon="💡" label="What it discovered">{a.discovery}</Row>
-              <Row icon="🌙" label="Why it stopped">{a.whyStopped}</Row>
+              <Row label="Why NASA sent it">{a.purpose}</Row>
+              <Row label="How it worked">{a.howItWorked}</Row>
+              <Row label="What it discovered">{a.discovery}</Row>
+              <Row label="Why it stopped">{a.whyStopped}</Row>
               <div className="bg-[#ffe7a8] rounded-2xl p-3 text-[16px]">
-                <b>⭐ Fun fact:</b> {a.funFact}
+                <b>Fun fact:</b> {a.funFact}
               </div>
               <p className="text-xs opacity-70">
                 Sources:{" "}
@@ -117,7 +114,7 @@ export default function MemoryPanel() {
               </Button>
             ) : (
               <Button onClick={openActivity}>
-                Investigate the clue 🔍
+                Investigate the clue
               </Button>
             )}
           </div>

@@ -114,9 +114,9 @@ export default function CaseBoard() {
             <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ delay: 0.4 }} className="glass rounded-3xl p-6 md:p-8 max-w-3xl text-center space-y-4">
               <p className="font-display text-glow tracking-widest">THE VERDICT</p>
               <p className="font-display text-2xl md:text-3xl font-bold leading-snug">
-                Mars had liquid water long ago 💧
+                Mars had liquid water long ago
                 <br />
-                and still has frozen ice today 🧊
+                and still has frozen ice today
               </p>
               <p className="text-lg text-white/90">
                 But did life ever exist on Mars? <b>Nobody knows yet.</b> Viking&apos;s experiments couldn&apos;t prove it.

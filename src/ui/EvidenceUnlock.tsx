@@ -26,7 +26,7 @@ export function EvidenceCard({ id, small = false }: { id: ArtifactId; small?: bo
         <p className="text-xs font-bold uppercase opacity-60">{a.shortName}</p>
         <h3 className={`font-display font-bold leading-tight ${small ? "text-lg" : "text-2xl"}`}>{a.evidenceCard.title}</h3>
         <p className={`${small ? "text-sm" : "text-base"} leading-snug mt-1`}>{a.evidenceCard.clue}</p>
-        {!small && <p className="text-xs mt-3 opacity-70">📍 Real site: {a.realLocation}</p>}
+        {!small && <p className="text-xs mt-3 opacity-70">Real site: {a.realLocation}</p>}
       </div>
     </div>
   );
@@ -58,7 +58,7 @@ export default function EvidenceUnlock() {
     <Overlay>
       <div className="flex flex-col items-center gap-6">
         <motion.p initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="font-display text-3xl md:text-4xl font-bold text-glow drop-shadow">
-          ✨ New Evidence Unlocked! ✨
+          New Evidence Unlocked!
         </motion.p>
         <motion.div
           initial={{ rotateY: 180, scale: 0.4, opacity: 0 }}

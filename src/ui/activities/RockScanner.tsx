@@ -69,7 +69,7 @@ export default function RockScanner({ onSuccess }: ActivityProps) {
         Water clues found:
         {Array.from({ length: A.required }).map((_, i) => (
           <span key={i} className={`w-6 h-6 rounded-full grid place-items-center border-2 ${i < found ? "bg-glow border-glow text-night" : "border-white/40"}`}>
-            {i < found ? "💧" : ""}
+            {i < found ? i + 1 : ""}
           </span>
         ))}
       </div>
@@ -101,7 +101,7 @@ export default function RockScanner({ onSuccess }: ActivityProps) {
               </AnimatePresence>
               {st === "scanned" && (
                 <motion.p initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className={`mt-2 text-sm rounded-xl p-2 ${good ? "bg-glow text-night" : "bg-white/10"}`}>
-                  {good ? "💧 " : "🪨 "}
+                  <b>{good ? "Water clue: " : "No water clue: "}</b>
                   {rock.scan}
                 </motion.p>
               )}
@@ -113,7 +113,7 @@ export default function RockScanner({ onSuccess }: ActivityProps) {
       {solved && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-end">
           <Button variant="glow" onClick={onSuccess} autoFocus>
-            Collect the Evidence ✨
+            Collect the Evidence
           </Button>
         </motion.div>
       )}

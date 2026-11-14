@@ -87,13 +87,13 @@ export default function DigSite({ onSuccess }: ActivityProps) {
 
         <div className="flex-1 space-y-3">
           <div className="bg-white/5 rounded-2xl p-4">
-            <p className="font-display text-lg">🦾 Trench progress</p>
+            <p className="font-display text-lg">Trench progress</p>
             <p className="text-white/80 text-sm">
               Squares dug: {dug.length} · White patches: {iceFound}
             </p>
             {(stage === "waiting" || stage === "revealed") && (
               <div className="mt-3">
-                <p className="font-display">📅 Day {sol} / 4</p>
+                <p className="font-display">Day {sol} / 4</p>
                 <div className="h-3 bg-white/10 rounded-full mt-1 overflow-hidden">
                   <motion.div className="h-full bg-glow" animate={{ width: `${(sol / 4) * 100}%` }} />
                 </div>
@@ -102,16 +102,16 @@ export default function DigSite({ onSuccess }: ActivityProps) {
           </div>
           {stage === "found" && (
             <Button variant="glow" onClick={wait} autoFocus>
-              ⏳ {A.waitButton}
+              {A.waitButton}
             </Button>
           )}
           {stage === "revealed" && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
               <p className="bg-glow/15 border-2 border-glow rounded-2xl p-3 text-[16px]">
-              🧊 → 💨 Salt would have stayed. The white chunks <b>turned straight into vapor</b>. Phoenix found <b>water ice</b>!
+              Salt would have stayed. The white chunks <b>turned straight into vapor</b>. Phoenix found <b>water ice</b>!
               </p>
               <Button variant="glow" onClick={onSuccess} autoFocus>
-                Collect the Evidence ✨
+                Collect the Evidence
               </Button>
             </motion.div>
           )}

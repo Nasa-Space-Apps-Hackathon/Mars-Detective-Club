@@ -20,7 +20,6 @@ export interface RockData {
 export interface Experiment {
   id: string;
   label: string;
-  icon: string;
   action: string;
   result: string;
 }

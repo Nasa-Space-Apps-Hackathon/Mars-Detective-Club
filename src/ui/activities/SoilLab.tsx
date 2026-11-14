@@ -45,7 +45,7 @@ export default function SoilLab({ onSuccess }: ActivityProps) {
   return (
     <ActivityShell title={A.title} intro={A.intro} ziggySays={ziggy}>
       <div className="grid md:grid-cols-3 gap-4">
-        {A.experiments.map((e) => {
+        {A.experiments.map((e, index) => {
           const isDone = done.includes(e.id);
           const isRunning = running === e.id;
           return (
@@ -59,8 +59,12 @@ export default function SoilLab({ onSuccess }: ActivityProps) {
               }`}
             >
               <div className="flex items-center gap-3">
-                <motion.span className="text-4xl" animate={isRunning ? { rotate: [0, -12, 12, 0], scale: [1, 1.15, 1] } : {}} transition={{ repeat: Infinity, duration: 0.6 }}>
-                  {e.icon}
+                <motion.span
+                  className={`w-10 h-10 shrink-0 rounded-full grid place-items-center font-display font-bold text-xl ${isDone ? "bg-glow text-night" : "bg-white/15"}`}
+                  animate={isRunning ? { rotate: [0, -12, 12, 0], scale: [1, 1.15, 1] } : {}}
+                  transition={{ repeat: Infinity, duration: 0.6 }}
+                >
+                  {index + 1}
                 </motion.span>
                 <span className="font-display font-bold text-lg leading-tight">{e.label}</span>
               </div>
@@ -76,7 +80,7 @@ export default function SoilLab({ onSuccess }: ActivityProps) {
 
       {allDone && (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white/5 rounded-2xl p-4">
-          <p className="font-display text-xl font-bold mb-3">🕵️ {A.question}</p>
+          <p className="font-display text-xl font-bold mb-3">{A.question}</p>
           <div className="grid gap-2">
             {A.options.map((o) => (
               <button
@@ -86,8 +90,8 @@ export default function SoilLab({ onSuccess }: ActivityProps) {
                   answer === o.id ? (o.correct ? "border-leaf bg-leaf/20" : "border-rust bg-rust/20") : "border-white/15 hover:border-glow bg-white/5"
                 }`}
               >
-                {answer === o.id ? (o.correct ? "✅ " : "❌ ") : "◻️ "}
                 {o.text}
+                {answer === o.id && <b className="ml-2 font-display">{o.correct ? "Correct!" : "Not quite."}</b>}
               </button>
             ))}
           </div>
@@ -97,7 +101,7 @@ export default function SoilLab({ onSuccess }: ActivityProps) {
       {correct && (
         <div className="flex justify-end">
           <Button variant="glow" onClick={onSuccess} autoFocus>
-            Collect the Evidence ✨
+            Collect the Evidence
           </Button>
         </div>
       )}

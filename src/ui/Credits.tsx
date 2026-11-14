@@ -40,7 +40,7 @@ export default function Credits() {
         </div>
 
         <section>
-          <h3 className="font-display text-2xl font-bold mb-3">👩‍🚀 Team</h3>
+          <h3 className="font-display text-2xl font-bold mb-3">Team</h3>
           <ul className="grid sm:grid-cols-2 gap-2">
             {TEAM.map((t) => (
               <li key={t.role} className="bg-white/5 rounded-xl px-4 py-2">
@@ -54,7 +54,7 @@ export default function Credits() {
 
         <section>
           <h3 className="font-display text-2xl font-bold mb-3">
-            🛰️ NASA sources
+            NASA sources
           </h3>
           <ul className="space-y-2 text-[16px]">
             {ARTIFACT_ORDER.map((id) => (
@@ -110,7 +110,7 @@ export default function Credits() {
 
         <section>
           <h3 className="font-display text-2xl font-bold mb-3">
-            🤖 AI use disclosure
+            AI use disclosure
           </h3>
           <p className="text-white/85 text-base mb-3">
             The world upgrade, including procedural character geometry,

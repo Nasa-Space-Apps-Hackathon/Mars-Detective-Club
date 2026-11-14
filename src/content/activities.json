@@ -7,21 +7,18 @@
       {
         "id": "heat",
         "label": "Heat it up",
-        "icon": "🔥",
         "action": "Baking the soil in a tiny oven…",
         "result": "Earlier, the soil gave off gas. After the soil was heated, the strange reaction mostly stopped. Living things die in heat… but some chemicals also break down. So this clue could point either way! Confusing!"
       },
       {
         "id": "nutrients",
         "label": "Feed it nutrients",
-        "icon": "💧",
         "action": "Adding a nutrient \"soup\" to the soil…",
         "result": "Gas bubbled out! Living things can do that… but so can special chemicals in the soil."
       },
       {
         "id": "sniff",
         "label": "Search for carbon molecules",
-        "icon": "🧪",
         "action": "Sniffing the soil with a gas detector…",
         "result": "No organic (carbon) molecules found. Life on Earth is built from them, so this is a big clue against life."
       }

@@ -19,7 +19,7 @@ function About({ onClose }: { onClose: () => void }) {
           discovered and why it stopped working.
         </p>
         <p className="bg-white/10 rounded-2xl p-3 text-[16px]">
-          🗺️ <b>Virtual simulation:</b> in real life these machines landed thousands of kilometers apart. We placed them close together so you can visit all three. Their true landing
+          <b>Virtual simulation:</b> in real life these machines landed thousands of kilometers apart. We placed them close together so you can visit all three. Their true landing
           sites are shown in your Journal.
         </p>
         <div className="flex justify-end">
@@ -51,12 +51,12 @@ export default function MainMenu() {
             <br />
             Detective Club
           </h1>
-          <p className="mt-4 text-xl md:text-2xl text-dust">Case #001: Did Mars ever have water? 💧</p>
+          <p className="mt-4 text-xl md:text-2xl text-dust">Case #001: Did Mars ever have water?</p>
         </motion.div>
 
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row gap-3">
           <Button className="text-2xl px-10 py-4" onClick={startGame} autoFocus>
-            ▶ Start the case
+            Start the case
           </Button>
           <Button variant="ghost" onClick={() => setAbout(true)}>
             About

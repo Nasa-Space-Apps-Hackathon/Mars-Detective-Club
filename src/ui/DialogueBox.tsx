@@ -122,10 +122,10 @@ export default function DialogueBox() {
                 skipAll();
               }}
             >
-              Skip ⏭
+              Skip
             </button>
             <span className={done ? "animate-pulse" : "opacity-0"}>
-              Click or <kbd>Space</kbd> ▶
+              Click or <kbd>Space</kbd>
             </span>
           </div>
         </div>
