@@ -2,6 +2,8 @@
   "_note": "Person 3: facts verified against NASA/JPL pages. Keys are unchanged from before's draft so the UI keeps working :)",
   "viking1": {
     "id": "viking1",
+    "image": "/images/viking1.jpg",
+    "imageCredit": "Photo: NASA. First photograph taken on the surface of Mars, Viking 1, 20 Jul 1976.",
     "name": "Viking 1 Lander",
     "shortName": "Viking 1",
     "missionTitle": "The First Clue",
@@ -30,6 +32,8 @@
 
   "opportunity": {
     "id": "opportunity",
+    "image": "/images/opportunity.jpg",
+    "imageCredit": "Photo: NASA/JPL-Caltech. Opportunity's shadow on sol 180.",
     "name": "Opportunity Rover",
     "shortName": "Opportunity",
     "missionTitle": "The Rock That Talks",
@@ -59,6 +63,8 @@
   
   "phoenix": {
     "id": "phoenix",
+    "image": "/images/phoenix.jpg",
+    "imageCredit": "Photo: NASA/JPL-Caltech/University of Arizona. Phoenix on its parachute, seen by Mars Reconnaissance Orbiter.",
     "name": "Phoenix Mars Lander",
     "shortName": "Phoenix",
     "missionTitle": "The Frozen Surprise",
