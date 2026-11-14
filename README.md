@@ -66,13 +66,3 @@ src/
 Exploration preserves the original Mars gravity (3.71 m/s²) and jump impulse (3.4 m/s). Dust-devil forces are exaggerated for this playful simulation: they pull, lift and toss Pebble, with an automatic recovery; landing zones and mission pads are sheltered. The camera button in the HUD reduces shake and speed effects and also respects the system's reduced-motion preference.
 
 Viking 1 and Opportunity now load local NASA GLB models using Drei. Model sources, credits and the remaining Phoenix asset gap are documented in [public/models/README.md](public/models/README.md). Draco decoding files are hosted locally. Phoenix is still a stylized representation.
-
----
-
-## Before submission
-
-- [x] Team names + GitHub URL in `src/ui/Credits.tsx`
-- [ ] AI-use disclosure filled in `src/ui/Credits.tsx` (Space Apps rule)
-- [x] All facts verified (Malak Mostafa), logged in `SOURCES.md`
-- [x] Live link in this README
-- [ ] Demo video and slides
