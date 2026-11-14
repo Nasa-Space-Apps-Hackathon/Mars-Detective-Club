@@ -11,6 +11,7 @@ export type Phase =
   | "menu" // main menu
   | "intro" // Ziggy intro dialogue + controls tutorial
   | "explore" // player walks (the ONLY phase where movement is allowed)
+  | "shop" // exterior landing ship supply terminal
   | "dialogue" // Ziggy talks about a machine
   | "memory" // NASA fact file of the machine
   | "activity" // mini science activity

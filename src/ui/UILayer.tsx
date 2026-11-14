@@ -15,6 +15,7 @@ import PauseMenu from "./PauseMenu";
 import CaseBoard from "./CaseBoard";
 import Credits from "./Credits";
 import DevPanel from "./DevPanel";
+import ShipShop from "./ShipShop";
 
 /**
  * Person 4's overlay. Sits on top of the 3D canvas.
@@ -38,7 +39,8 @@ export default function UILayer() {
       const s = useGame.getState();
       const inGame = !["menu", "credits"].includes(s.phase);
       if (e.code === "Escape" && inGame) {
-        if (s.journalOpen) s.toggleJournal(false);
+        if (s.phase === "shop") s.closeShop();
+        else if (s.journalOpen) s.toggleJournal(false);
         else if (s.showControls) s.dismissControls();
         else if (s.phase === "explore") s.togglePause();
       }
@@ -58,6 +60,7 @@ export default function UILayer() {
         {phase === "menu" && <MainMenu key="menu" />}
         {(phase === "intro" || phase === "dialogue") && <DialogueBox key="dialogue" />}
         {phase === "memory" && <MemoryPanel key="memory" />}
+        {phase === "shop" && <ShipShop key="shop" />}
         {phase === "activity" && <ActivityHost key="activity" />}
         {phase === "evidence" && <EvidenceUnlock key="evidence" />}
         {phase === "ending" && <CaseBoard key="ending" />}

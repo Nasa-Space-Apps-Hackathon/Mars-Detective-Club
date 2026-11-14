@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 import { ARTIFACT_ORDER, type ArtifactId, type Phase, type Vec2 } from "./types";
+import { SALVAGE, SALVAGE_RADIUS, TOOLBOX_COST } from "@/world/salvageData";
+import { SHIP_TERMINAL } from "@/world/landingPod";
 
 /**
  * The ONE shared game store.
@@ -24,6 +26,14 @@ export interface GameState {
   scanned: ArtifactId[];
   evidence: ArtifactId[];
   revisit: boolean; // true when re-opening a solved machine (memory only)
+  collectedSalvage: string[];
+  salvage: number;
+  toolbox: boolean;
+  repaired: ArtifactId[];
+  repairMission: boolean;
+  nearSalvage: string | null;
+  nearShip: boolean;
+  fieldMessage: string;
 
   // dialogue
   dialogueKey: string;
@@ -52,6 +62,11 @@ export interface GameState {
   toggleMute: () => void;
   devUnlock: (id: ArtifactId) => void;
   reset: () => void;
+  setNearSupplies: (salvage: string | null, ship: boolean) => void;
+  collectSalvage: (id: string) => void;
+  openShop: () => void;
+  buyToolbox: () => void;
+  closeShop: () => void;
 }
 
 const initial = {
@@ -64,6 +79,14 @@ const initial = {
   scanned: [] as ArtifactId[],
   evidence: [] as ArtifactId[],
   revisit: false,
+  collectedSalvage: [] as string[],
+  salvage: 0,
+  toolbox: false,
+  repaired: ["viking1"] as ArtifactId[],
+  repairMission: false,
+  nearSalvage: null,
+  nearShip: false,
+  fieldMessage: "",
   dialogueKey: "intro",
   dialogueIndex: 0,
   afterDialogue: "explore" as Phase,
@@ -97,7 +120,15 @@ export const useGame = create<GameState>((set, get) => ({
 
   startScan: (id) => {
     const s = get();
-    if (s.phase !== "explore" || s.paused) return;
+    if (s.phase !== "explore" || s.paused || s.journalOpen || s.showControls) return;
+    if (!s.repaired.includes(id)) {
+      if (!s.toolbox) {
+        set({ repairMission: true, fieldMessage: `This simulation station needs a toolbox. Collect ${TOOLBOX_COST} glowing scrap pieces, then trade at your ship.` });
+      } else {
+        set({ repaired: [...s.repaired, id], fieldMessage: "Station repaired. Press E again to scan. Your toolbox is reusable." });
+      }
+      return;
+    }
     const scanned = s.scanned.includes(id) ? s.scanned : [...s.scanned, id];
     if (s.evidence.includes(id)) {
       // already solved → just reopen the fact file
@@ -120,7 +151,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   completeActivity: (id) => {
     const ev = get().evidence;
-    set({ evidence: ev.includes(id) ? ev : [...ev, id], phase: "evidence" });
+    set({ evidence: ev.includes(id) ? ev : [...ev, id], phase: "evidence", repairMission: true, fieldMessage: "" });
   },
 
   closeEvidence: () => {
@@ -160,6 +191,30 @@ export const useGame = create<GameState>((set, get) => ({
     })),
 
   reset: () => set({ ...initial }),
+
+  setNearSupplies: (nearSalvage, nearShip) => {
+    const s = get();
+    if (s.nearSalvage !== nearSalvage || s.nearShip !== nearShip) set({ nearSalvage, nearShip });
+  },
+  collectSalvage: (id) => {
+    const s = get();
+    const piece = SALVAGE.find((item) => item.id === id);
+    if (!canMove() || !piece || s.collectedSalvage.includes(id) || Math.hypot(piece.x - s.playerPos[0], piece.z - s.playerPos[1]) > SALVAGE_RADIUS + 0.5) return;
+    set({ collectedSalvage: [...s.collectedSalvage, id], salvage: s.salvage + 1, nearSalvage: null,
+      repairMission: s.repairMission || s.salvage + 1 >= TOOLBOX_COST,
+      fieldMessage: s.salvage + 1 >= TOOLBOX_COST && !s.toolbox ? "Enough scrap. Follow the compass back to the ship for your toolbox." : "Scrap collected. Your ship can recycle it into supplies." });
+  },
+  openShop: () => {
+    const s = get();
+    if (!canMove() || Math.hypot(s.playerPos[0] - SHIP_TERMINAL.x, s.playerPos[1] - SHIP_TERMINAL.z) > SHIP_TERMINAL.radius + 0.5) return;
+    set({ phase: "shop", repairMission: true, fieldMessage: "" });
+  },
+  buyToolbox: () => {
+    const s = get();
+    if (s.phase !== "shop" || s.toolbox || s.salvage < TOOLBOX_COST) return;
+    set({ toolbox: true, salvage: s.salvage - TOOLBOX_COST, repairMission: true });
+  },
+  closeShop: () => set({ phase: "explore", fieldMessage: "" }),
 }));
 
 /** Person 1: only move the player when this is true. */

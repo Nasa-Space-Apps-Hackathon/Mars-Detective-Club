@@ -11,8 +11,8 @@
 .action svg, .weather svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .counter { font-family: var(--font-display); font-size: 1rem; font-variant-numeric: tabular-nums; }
 .compass { position: absolute; bottom: 24px; right: 24px; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgb(27 31 59 / 92%); border-radius: 16px; box-shadow: 0 8px 24px rgb(38 21 21 / 18%); }
-.compassArrow { width: 40px; height: 40px; display: grid; place-items: center; }
-.compassArrow svg { width: 32px; height: 32px; }
+.compassArrow { width: 28px; height: 28px; flex: 0 0 28px; overflow: hidden; display: grid; place-items: center; }
+.compassArrow svg { display: block; width: 20px; height: 20px; max-width: 20px; max-height: 20px; }
 .destination { display: flex; flex-direction: column; gap: 2px; }
 .destination strong { font-family: var(--font-display); font-size: .875rem; font-weight: 500; }
 .destination span { color: #b8eeee; font-size: .75rem; font-variant-numeric: tabular-nums; }

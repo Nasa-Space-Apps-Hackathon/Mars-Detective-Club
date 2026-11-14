@@ -22,6 +22,7 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
   const rightKnee = useRef<THREE.Group>(null);
   const leftArm = useRef<THREE.Group>(null);
   const rightArm = useRef<THREE.Group>(null);
+  const leftElbow = useRef<THREE.Group>(null);
   const rightElbow = useRef<THREE.Group>(null);
   const scanner = useRef<THREE.Group>(null);
   const scannerRing = useRef<THREE.Mesh>(null);
@@ -29,22 +30,25 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
   const ziggy = useRef<THREE.Group>(null);
   const propeller = useRef<THREE.Group>(null);
   const thruster = useRef<THREE.Mesh>(null);
-  const animation = useRef({ stride: 0, gait: 0, scan: 0, lean: 0, tumble: 0 });
+  const animation = useRef({ stride: 0, gait: 0, run: 0, air: 0, scan: 0, lean: 0, tumble: 0 });
   const temp = useMemo(() => new THREE.Vector3(), []);
   const beamDirection = useMemo(() => new THREE.Vector3(), []);
   const beamUp = useMemo(() => new THREE.Vector3(0, 1, 0), []);
 
   useFrame(({ clock }, delta) => {
-    const dt = Math.min(delta, 0.05);
     const s = runtime.current;
     const a = animation.current;
     const active = useGame.getState();
     const frozen = active.paused || active.journalOpen || active.showControls;
+    const dt = frozen ? 0 : Math.min(delta, 0.05);
     const t = s.simTime;
     const scanTarget = s.scanning > 0 ? Math.sin(Math.min(s.scanning * 1.4, 1) * Math.PI * 0.5) : 0;
     a.scan = THREE.MathUtils.damp(a.scan, scanTarget, 13, dt);
-    a.gait = THREE.MathUtils.damp(a.gait, s.grounded ? Math.min(s.speed / 6, 1) : 0, 12, dt);
-    if (!frozen) a.stride += s.speed * dt * 2.25;
+    a.gait = THREE.MathUtils.damp(a.gait, s.grounded ? Math.min(s.speed / 6.5, 1) : 0, 12, dt);
+    a.run = THREE.MathUtils.damp(a.run, THREE.MathUtils.clamp((s.speed - 6.5) / 4.5, 0, 1), 10, dt);
+    a.air = THREE.MathUtils.damp(a.air, s.grounded ? 0 : 1, 12, dt);
+    // A quicker cadence for running, without turning the arms into a rapid propeller.
+    if (s.grounded) a.stride += Math.min(s.speed, 6.5) * dt * (1.35 + a.run * 0.4);
     const step = Math.sin(a.stride);
     const falling = !s.grounded && s.velocity.y < -1;
     const rising = !s.grounded && s.velocity.y > 0.5;
@@ -62,6 +66,7 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
     }
     if (torso.current) {
       torso.current.rotation.x = a.lean + squish * 0.2 - (falling ? 0.12 : 0);
+      torso.current.rotation.y = THREE.MathUtils.damp(torso.current.rotation.y, step * a.gait * (0.055 + a.run * 0.035), 12, dt);
       torso.current.rotation.z = Math.sin(t * 4) * a.tumble;
     }
     const upperLeft = step * 0.48 * a.gait + (rising ? -0.45 : falling ? 0.2 : 0) - squish * 0.35;
@@ -70,22 +75,35 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
     if (rightLeg.current) rightLeg.current.rotation.x = THREE.MathUtils.damp(rightLeg.current.rotation.x, upperRight, 14, dt);
     if (leftKnee.current) leftKnee.current.rotation.x = THREE.MathUtils.damp(leftKnee.current.rotation.x, Math.max(0, -step) * a.gait * 0.6 + airborne * 0.4 + squish * 0.65, 14, dt);
     if (rightKnee.current) rightKnee.current.rotation.x = THREE.MathUtils.damp(rightKnee.current.rotation.x, Math.max(0, step) * a.gait * 0.6 + airborne * 0.3 + squish * 0.65, 14, dt);
+    const armSwing = a.gait * (0.68 + a.run * 0.2);
+    const jumpArm = rising ? -0.7 : falling ? -0.35 : -0.55;
+    const armSpread = 0.18 + a.gait * 0.04 + a.air * (falling ? 0.46 : 0.34);
+    const elbowBend = 0.2 + a.gait * (0.16 + a.run * 0.52);
     if (leftArm.current) {
-      leftArm.current.rotation.x = THREE.MathUtils.damp(leftArm.current.rotation.x, -step * a.gait * 0.42 + (rising ? -0.6 : falling ? -0.35 : 0), 12, dt);
-      leftArm.current.rotation.z = THREE.MathUtils.damp(leftArm.current.rotation.z, 0.12 + airborne * 0.45, 12, dt);
+      leftArm.current.rotation.x = THREE.MathUtils.damp(leftArm.current.rotation.x, THREE.MathUtils.lerp(-step * armSwing, jumpArm, a.air) - squish * 0.18, 14, dt);
+      // Negative roll on the left / positive on the right keeps the hands outside the suit.
+      leftArm.current.rotation.z = THREE.MathUtils.damp(leftArm.current.rotation.z, -armSpread, 12, dt);
     }
     if (rightArm.current) {
-      rightArm.current.rotation.x = THREE.MathUtils.damp(rightArm.current.rotation.x, step * a.gait * 0.42 - a.scan * 1.3 - airborne * 0.3, 12, dt);
-      rightArm.current.rotation.z = THREE.MathUtils.damp(rightArm.current.rotation.z, -0.12 - airborne * 0.45, 12, dt);
+      const movement = THREE.MathUtils.lerp(step * armSwing, jumpArm, a.air) - squish * 0.18;
+      rightArm.current.rotation.x = THREE.MathUtils.damp(rightArm.current.rotation.x, THREE.MathUtils.lerp(movement, -1.05, a.scan), 14, dt);
+      rightArm.current.rotation.z = THREE.MathUtils.damp(rightArm.current.rotation.z, THREE.MathUtils.lerp(armSpread, 0.18, a.scan), 12, dt);
     }
-    if (rightElbow.current) rightElbow.current.rotation.x = -0.12 - a.scan * 0.1;
+    if (leftElbow.current) {
+      const bend = THREE.MathUtils.lerp(elbowBend + Math.max(0, step) * a.gait * 0.14, 0.48, a.air);
+      leftElbow.current.rotation.x = THREE.MathUtils.damp(leftElbow.current.rotation.x, -bend, 14, dt);
+    }
+    if (rightElbow.current) {
+      const bend = THREE.MathUtils.lerp(elbowBend + Math.max(0, -step) * a.gait * 0.14, 0.48, a.air);
+      rightElbow.current.rotation.x = THREE.MathUtils.damp(rightElbow.current.rotation.x, -THREE.MathUtils.lerp(bend, 0.38, a.scan), 14, dt);
+    }
     if (scanner.current) scanner.current.visible = a.scan > 0.08;
     if (scanBeam.current) {
       scanBeam.current.visible = a.scan > 0.15 && Boolean(active.activeArtifact);
       if (active.activeArtifact) {
         const [targetX, targetZ] = ZONES[active.activeArtifact];
-        temp.set(s.position.x + Math.cos(s.heading) * 0.4 + Math.sin(s.heading) * 0.6,
-          s.position.y + 1.3, s.position.z - Math.sin(s.heading) * 0.4 + Math.cos(s.heading) * 0.6);
+        // Follow the animated hand rather than leaving the beam anchored in the torso.
+        scanner.current?.localToWorld(temp.set(0, -0.02, 0.15));
         beamDirection.set(targetX, s.position.y + 1.1, targetZ).sub(temp);
         const distance = beamDirection.length();
         scanBeam.current.position.copy(temp).addScaledVector(beamDirection, 0.5);
@@ -156,10 +174,10 @@ export default function Character({ runtime }: { runtime: RuntimeRef }) {
             <mesh position={[0.26, 1.35, 0.12]}><boxGeometry args={[0.13, 0.1, 0.13]} /><meshStandardMaterial color={joints} /></mesh>
             <mesh position={[0.26, 1.35, 0.19]}><circleGeometry args={[0.035, 8]} /><meshBasicMaterial color="#fff1b3" /></mesh>
             {[-1, 1].map((side) => (
-              <group key={side} ref={side < 0 ? leftArm : rightArm} position={[side * 0.39, 0.6, 0]}>
+              <group key={side} ref={side < 0 ? leftArm : rightArm} position={[side * 0.46, 0.6, 0]} rotation={[0, 0, side * 0.18]}>
                 <mesh castShadow><sphereGeometry args={[0.16, 10, 8]} /><meshStandardMaterial color={suit} /></mesh>
                 <mesh position={[0, -0.17, 0]} castShadow><capsuleGeometry args={[0.13, 0.16, 3, 8]} /><meshStandardMaterial color={orange} /></mesh>
-                <group ref={side > 0 ? rightElbow : undefined} position={[0, -0.34, 0]}>
+                <group ref={side < 0 ? leftElbow : rightElbow} position={[0, -0.34, 0]} rotation={[-0.2, 0, 0]}>
                   <mesh castShadow><sphereGeometry args={[0.12, 8, 6]} /><meshStandardMaterial color={joints} /></mesh>
                   <mesh position={[0, -0.13, 0]} castShadow><capsuleGeometry args={[0.115, 0.14, 3, 8]} /><meshStandardMaterial color={suit} /></mesh>
                   <mesh position={[0, -0.29, 0.01]} castShadow><sphereGeometry args={[0.12, 8, 8]} /><meshStandardMaterial color={joints} /></mesh>

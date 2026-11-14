@@ -150,6 +150,7 @@ function Machine({ id }: { id: ArtifactId }) {
   const y = getHeight(x, z);
   const solved = useGame((s) => s.evidence.includes(id));
   const near = useGame((s) => s.nearArtifact === id);
+  const repaired = useGame((s) => s.repaired.includes(id));
   const beam = useRef<THREE.Mesh>(null);
   const ring = useRef<THREE.Mesh>(null);
   const Model = MODELS[id];
@@ -164,7 +165,7 @@ function Machine({ id }: { id: ArtifactId }) {
     }
     if (beam.current) (beam.current.material as THREE.MeshBasicMaterial).opacity = solved ? 0.12 : 0.32 + Math.sin(t * 3) * 0.08;
   });
-  const color = solved ? "#7CFF9B" : near ? "#FFFFFF" : "#5CE1E6";
+  const color = solved ? "#7CFF9B" : !repaired ? "#ffb96b" : near ? "#FFFFFF" : "#5CE1E6";
   return (
     <group position={[x, y, z]}>
       <group rotation={[0, (x + z) * 0.1, 0]}>

@@ -12,7 +12,7 @@ const ROWS: [React.ReactNode, string][] = [
   [<kbd key="space">Space</kbd>, "Jump in low gravity"],
   ["Drag mouse / scroll", "Look around / zoom"],
   [<kbd key="r">R</kbd>, "Bring the camera behind Pebble"],
-  [<kbd key="e">E</kbd>, "Scan a nearby NASA machine"],
+  [<kbd key="e">E</kbd>, "Scan, collect scrap, trade or repair"],
   [<><kbd>J</kbd> / <kbd>Esc</kbd></>, "Journal / pause"],
 ];
 
@@ -34,7 +34,7 @@ export default function ControlsTutorial() {
     <Overlay>
       <motion.div className={styles.tutorial} initial={{ opacity: 0, y: reduced ? 0 : 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} role="dialog" aria-modal="true" aria-labelledby="controls-heading">
         <h2 id="controls-heading">Your boots. A whole new world.</h2>
-        <p>Follow the compass to the glowing machines. Take your time; every old explorer has a story.</p>
+        <p>Viking 1 is ready to scan. Collect glowing scrap on the trail and trade 6 pieces at your ship for a reusable toolbox to repair the other simulation stations.</p>
         <ul>{ROWS.map(([key, label], i) => <li key={i}><span>{key}</span><span>{label}</span></li>)}</ul>
         <div className={styles.weatherNote}><strong>Watch the dust devils</strong><p>In this simulation, swirling wind can lift and toss Pebble. Keep steering to get clear; Pebble will brace for landing. Use the camera button above to reduce camera effects.</p></div>
         <div className={styles.tutorialFooter}><Button variant="glow" onClick={dismiss} autoFocus>Let&apos;s explore</Button></div>

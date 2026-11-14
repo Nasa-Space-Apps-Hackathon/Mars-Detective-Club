@@ -13,6 +13,9 @@ import { getStormCenter, sampleStorm, STORMS } from "./weather";
 import { MAP_CENTER, MAP_RADIUS, SCAN_RADIUS, ZONES } from "./zones";
 import { playerState, teleport as legacyTeleport } from "./playerState";
 import { JUMP_SPEED, MARS_GRAVITY as GRAVITY } from "./physics";
+import { SALVAGE, SALVAGE_RADIUS } from "./salvageData";
+import { SHIP_TERMINAL } from "./landingPod";
+import { interactNearby } from "@/lib/supplies";
 
 const FRICTION = 14;
 const CAPSULE_CENTER = 1.17;
@@ -49,8 +52,10 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       keys.current[event.code] = true;
       if (event.code === "Space" && !event.repeat && canMove()) input.current.jumpBuffer = 0.15;
       if (event.code === "KeyE" && !event.repeat && canMove()) {
-        const game = useGame.getState();
-        if (game.nearArtifact && runtime.current.grounded) game.startScan(game.nearArtifact);
+        if (runtime.current.grounded) {
+          useGame.getState().setPlayer([runtime.current.position.x, runtime.current.position.z], runtime.current.orbitYaw);
+          interactNearby();
+        }
       }
     };
     const up = (event: KeyboardEvent) => {
@@ -250,6 +255,10 @@ export default function Player({ runtime }: { runtime: RuntimeRef }) {
       }
     }
     game.setNearArtifact(near);
+    const nearest = s.grounded ? SALVAGE.filter((piece) => !game.collectedSalvage.includes(piece.id))
+      .map((piece) => ({ id: piece.id, distance: Math.hypot(s.position.x - piece.x, s.position.z - piece.z) }))
+      .filter((piece) => piece.distance < SALVAGE_RADIUS).sort((a, b) => a.distance - b.distance)[0] : null;
+    game.setNearSupplies(nearest?.id ?? null, s.grounded && Math.hypot(s.position.x - SHIP_TERMINAL.x, s.position.z - SHIP_TERMINAL.z) < SHIP_TERMINAL.radius);
     controls.lastPublish += dt;
     if (controls.lastPublish > 0.1) {
       controls.lastPublish = 0;

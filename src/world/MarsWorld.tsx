@@ -7,7 +7,7 @@
  */
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Suspense, useRef, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, type ReactNode } from "react";
 import { Physics } from "@react-three/rapier";
 import * as THREE from "three";
 import { playerState } from "./playerState";
@@ -24,6 +24,7 @@ import WorldColliders from "./WorldColliders";
 import { createWorldRuntime } from "./runtime";
 import DebugWorld from "./DebugWorld";
 import { MARS_GRAVITY } from "./physics";
+import Salvage from "./Salvage";
 
 /** Sun light whose shadow box follows the player → crisp shadows, cheap. */
 function SunLight() {
@@ -54,7 +55,12 @@ function SunLight() {
   );
 }
 
-export default function MarsWorld({ children }: { children?: ReactNode }) {
+function WorldReady({ onReady }: { onReady?: () => void }) {
+  useEffect(() => { onReady?.(); }, [onReady]);
+  return null;
+}
+
+export default function MarsWorld({ children, onReady }: { children?: ReactNode; onReady?: () => void }) {
   const runtime = useRef(createWorldRuntime());
   return (
     <Canvas shadows camera={{ fov: 55, near: 0.1, far: 900, position: [0, 8, 60] }} dpr={[1, 1.5]} gl={{ antialias: true, powerPreference: "high-performance" }} style={{ touchAction: "none" }}>
@@ -66,6 +72,7 @@ export default function MarsWorld({ children }: { children?: ReactNode }) {
       <Terrain />
       <Rocks />
       <Landmarks />
+      <Salvage />
       <DustParticles />
       <Environment runtime={runtime} />
       <Footprints />
@@ -73,6 +80,7 @@ export default function MarsWorld({ children }: { children?: ReactNode }) {
         <Physics gravity={[0, -MARS_GRAVITY, 0]} timeStep={1 / 60} interpolate>
           <WorldColliders />
           <Player runtime={runtime} />
+          <WorldReady onReady={onReady} />
         </Physics>
       </Suspense>
       <CameraRig runtime={runtime} />

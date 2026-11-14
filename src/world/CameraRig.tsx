@@ -10,6 +10,7 @@ import { publishWorldStatus, useWorldStatus } from "@/ui/WorldStatus";
 import type { RuntimeRef } from "./runtime";
 import { groundHeight, ROCKS } from "./worldConfig";
 import { ZONES } from "./zones";
+import { LANDING_POD } from "./landingPod";
 
 /** Drei owns orbit input/damping; this rig tracks the explorer and adds restrained impact feedback. */
 export default function CameraRig({ runtime }: { runtime: RuntimeRef }) {
@@ -94,6 +95,7 @@ export default function CameraRig({ runtime }: { runtime: RuntimeRef }) {
       shortenAroundSphere(rock.pos[0], rock.pos[1], rock.pos[2], rock.s + 0.28);
     }
     for (const [x, z] of Object.values(ZONES)) shortenAroundSphere(x, groundHeight(x, z) + 1.4, z, 2.1);
+    shortenAroundSphere(LANDING_POD.x, LANDING_POD.y + LANDING_POD.bodyCenterY, LANDING_POD.z, LANDING_POD.bodyBottomRadius + 0.3);
     // Test the boom against rising terrain as well as the destination camera point.
     for (let sample = 0.5; sample <= clearDistance; sample += 0.5) {
       const x = smoothed.x + direction.x * sample;
